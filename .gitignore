@@ -37,6 +37,8 @@
 *.pdb
 /Release/
 /Debug/
+CastingEssentials/Release/
+CastingEssentials/Debug/
 *.exp
 /CastingEssentials/*/Intermediate
 /CastingEssentials/Modules/Graphics_WORKING.zip
