@@ -1,11 +1,14 @@
 #include "Hooking/IBaseHook.h"
+#include "Misc/MissingDefinitions.h"
 
 #include <client/c_baseanimating.h>
 #include <client/c_baseplayer.h>
 #include <client/c_fire_smoke.h>
 #include <client/game_controls/baseviewport.h>
 #include <../materialsystem/texturemanager.h>
+#include <shared/basecombatweapon_shared.h>
 #include <shared/baseviewmodel_shared.h>
+#include <shared/usercmd.h>
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/ProgressBar.h>
 
@@ -17,16 +20,46 @@
 // adjust your padding until you get it right
 class OffsetChecking
 {
-	OFFSET_CHECK(C_BaseAnimating, m_nHitboxSet, 1376);
-	OFFSET_CHECK(C_BaseAnimating, m_bDynamicModelPending, 2185);
-	OFFSET_CHECK(C_BaseAnimating, m_pStudioHdr, 2192);
-
+	OFFSET_CHECK(C_BaseEntity, m_EntClientFlags, 90);
 	OFFSET_CHECK(C_BaseEntity, m_lifeState, 165);
 	OFFSET_CHECK(C_BaseEntity, m_bDormant, 426);
 	OFFSET_CHECK(C_BaseEntity, m_Particles, 596);
 
+	OFFSET_CHECK(C_BaseAnimating, m_nHitboxSet, 1376);
+	OFFSET_CHECK(C_BaseAnimating, m_bDynamicModelPending, 2185);
+	OFFSET_CHECK(C_BaseAnimating, m_pStudioHdr, 2192);
+
+	OFFSET_CHECK(C_EconEntity, m_AttributeManager, 2232);
+	OFFSET_CHECK(C_EconEntity, m_bValidatedAttachedEntity, 2560);
+	OFFSET_CHECK(C_EconEntity, m_Something, 2588);
+
+	OFFSET_CHECK(C_EconEntity::AttributeManager, m_iReapplyProvisionParity, 52);
+	OFFSET_CHECK(C_EconEntity::AttributeManager, m_hOuter, 56);
+	OFFSET_CHECK(C_EconEntity::AttributeManager, m_ProviderType, 64);
+	OFFSET_CHECK(C_EconEntity::AttributeManager, m_Item, 96);
+
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemDefinitionIndex, 36);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iEntityQuality, 40);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iEntityLevel, 44);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemIDHigh, 56);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemIDLow, 60);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iAccountID, 64);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iTeamNumber, 152);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_bInitialized, 156);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_Attributes, 168);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_NetworkedDynamicAttributesForDemos, 196);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_bOnlyIterateItemViewAttributes, 224);
+
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_iAttributeDefinitionIndex, 4);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_iRawValue32, 8);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_flValue, 8);
+	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_nRefundableCurrency, 12);
+
+	OFFSET_CHECK(C_BaseCombatWeapon, m_hOwner, 2640);
+
 	OFFSET_CHECK(C_BasePlayer, m_iFOVStart, 4152);
 	OFFSET_CHECK(C_BasePlayer, m_iDefaultFOV, 4160);
+	OFFSET_CHECK(C_BasePlayer, m_pCurrentCommand, 4220);
 	OFFSET_CHECK(C_BasePlayer, m_hVehicle, 4300);
 	OFFSET_CHECK(C_BasePlayer, m_hViewModel, 4472);
 
@@ -36,6 +69,11 @@ class OffsetChecking
 	OFFSET_CHECK(C_BaseViewModel, m_sAnimationPrefix, 2256);
 
 	OFFSET_CHECK(C_EntityFlame, m_hEffect, 1360);
+
+	OFFSET_CHECK(ConVar, m_fnChangeCallbackClient, 88);
+
+	OFFSET_CHECK(CUserCmd, mousedx, 56);
+	OFFSET_CHECK(CUserCmd, mousedy, 58);
 
 	OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown0, 388);
 	OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown1, 392);
@@ -71,6 +109,16 @@ class OffsetChecking
 	OFFSET_CHECK(vgui::ProgressBar, _segmentWide, 368);
 	OFFSET_CHECK(vgui::ProgressBar, m_iBarInset, 372);
 	OFFSET_CHECK(vgui::ProgressBar, m_iBarMargin, 376);
+
+	OFFSET_CHECK(SVC_FixAngle, m_bRelative, 20);
+	OFFSET_CHECK(SVC_FixAngle, m_Angle, 24);
+
+	template<typename T> static void Check(int expectedOffset, T func)
+	{
+		auto offset = Hooking::VTableOffset(func);
+		offset; // Don't generate a warning in release builds
+		Assert(offset == expectedOffset);
+	}
 
 public:
 	OffsetChecking()
@@ -145,6 +193,78 @@ public:
 			Assert((offset = Hooking::VTableOffset(&CBaseViewport::GetAnimationController)) == 248);
 
 			Assert((offset = Hooking::VTableOffset(&ITextureManager::FindNext)) == 32);
+		}
+
+		// C_BaseEntity
+		{
+			Check(74, &C_BaseEntity::GetTeamNumber);
+			Check(83, &C_BaseEntity::Simulate);
+			Assert((offset = VTableOffset(&C_BaseEntity::DrawBrushModel)) == 101);
+			Assert((offset = VTableOffset(&C_BaseEntity::ValidateEntityAttachedToPlayer)) == 158);
+		}
+
+		// C_BaseAnimating
+		{
+			Assert((offset = VTableOffset(&C_BaseAnimating::InternalDrawModel)) == 166);
+			Assert((offset = VTableOffset(&C_BaseAnimating::OnInternalDrawModel)) == 167);
+			Assert((offset = VTableOffset(&C_BaseAnimating::OnPostInternalDrawModel)) == 168);
+			Assert((offset = VTableOffset(&C_BaseAnimating::GetEconWeaponMaterialOverride)) == 169);
+			Assert((offset = VTableOffset(&C_BaseAnimating::AttachEntityToBone)) == 179);
+			Assert((offset = VTableOffset(&C_BaseAnimating::FrameAdvance)) == 189);
+			Assert((offset = VTableOffset(&C_BaseAnimating::GetServerIntendedCycle)) == 199);
+			Check(205, &C_BaseAnimating::LastBoneChangedTime);
+		}
+
+		// C_EconEntity
+		{
+			Check(206, &C_EconEntity::ShouldShowToolTip);
+			Check(209, &C_EconEntity::UpdateAttachmentModels);
+			Check(212, &C_EconEntity::IsOverridingViewmodel);
+			Check(213, &C_EconEntity::DrawOverriddenViewmodel);
+		}
+
+		// C_BasePlayer
+		{
+			Assert((offset = VTableOffset(&C_BasePlayer::GetEconWeaponMaterialOverride)) == 169);
+			Assert((offset = VTableOffset(&C_BasePlayer::ControlMouth)) == 170);
+			Assert((offset = VTableOffset(&C_BasePlayer::DoAnimationEvents)) == 171);
+			Assert((offset = VTableOffset(&C_BasePlayer::FireEvent)) == 172);
+			Assert((offset = VTableOffset(&C_BasePlayer::BecomeRagdollOnClient)) == 182);
+			Assert((offset = VTableOffset(&C_BasePlayer::ComputeClientSideAnimationFlags)) == 192);
+			Assert((offset = VTableOffset(&C_BasePlayer::DoMuzzleFlash)) == 196);
+			Assert((offset = VTableOffset(&C_BasePlayer::FormatViewModelAttachment)) == 202);
+			Assert((offset = VTableOffset(&C_BasePlayer::CalcAttachments)) == 204);
+			Assert((offset = VTableOffset(&C_BasePlayer::LastBoneChangedTime)) == 205);
+			//Assert((offset = VTableOffset(&C_BasePlayer::OnModelLoadComplete)) == 206);
+			Assert((offset = VTableOffset(&C_BasePlayer::InitPhonemeMappings)) == 206);
+			Assert((offset = VTableOffset(&C_BasePlayer::SetViewTarget)) == 209);
+			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSceneEvents)) == 211);
+			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSceneEvent)) == 212);
+			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSequenceSceneEvent)) == 213);
+			Assert((offset = VTableOffset(&C_BasePlayer::ClearSceneEvent)) == 214);
+			Assert((offset = VTableOffset(&C_BasePlayer::CheckSceneEventCompletion)) == 215);
+			//Assert((offset = VTableOffset(&C_BasePlayer::EnsureTranslations)) == 216);
+			Assert((offset = VTableOffset(&C_BasePlayer::Weapon_Switch)) == 222);
+			Assert((offset = VTableOffset(&C_BasePlayer::Weapon_CanSwitchTo)) == 223);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetActiveWeapon)) == 224);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetGlowEffectColor)) == 225);
+			Assert((offset = VTableOffset(&C_BasePlayer::UpdateGlowEffect)) == 226);
+			Assert((offset = VTableOffset(&C_BasePlayer::DestroyGlowEffect)) == 227);
+			Assert((offset = VTableOffset(&C_BasePlayer::SharedSpawn)) == 228);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetSteamID)) == 229);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetPlayerMaxSpeed)) == 230);
+			Assert((offset = VTableOffset(&C_BasePlayer::CalcView)) == 231);
+			Assert((offset = VTableOffset(&C_BasePlayer::CalcViewModelView)) == 232);
+			Assert((offset = VTableOffset(&C_BasePlayer::PlayerUse)) == 240);
+			Check(249, &C_BasePlayer::IsOverridingViewmodel);
+			Assert((offset = VTableOffset(&C_BasePlayer::DrawOverriddenViewmodel)) == 250);
+			Assert((offset = VTableOffset(&C_BasePlayer::ItemPreFrame)) == 260);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetFOV)) == 270);
+		}
+
+		// C_BaseViewModel
+		{
+			Check(207, &C_BaseViewModel::SetWeaponModel);
 		}
 	}
 };
