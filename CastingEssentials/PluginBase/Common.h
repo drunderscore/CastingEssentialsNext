@@ -12,7 +12,7 @@
 
 //#define PLUGIN_VERSION "r7b1"
 
-static constexpr const char* PLUGIN_NAME = "CastingEssentials";
+static constexpr const char* PLUGIN_NAME = "CastingEssentialsRed";
 extern const char* const PLUGIN_VERSION_ID;
 extern const char* const PLUGIN_FULL_VERSION;
 
