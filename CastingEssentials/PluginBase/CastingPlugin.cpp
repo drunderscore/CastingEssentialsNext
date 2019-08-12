@@ -8,7 +8,7 @@
 
 #include <convar.h>
 
-const char* const PLUGIN_VERSION_ID = "r21-red01";
+const char* const PLUGIN_VERSION_ID = "r21-red02";
 const char* const PLUGIN_FULL_VERSION = strdup(strprintf("%s %s", PLUGIN_NAME, PLUGIN_VERSION_ID).c_str());
 
 class CastingPlugin final : public Plugin
