@@ -91,6 +91,8 @@ private:
 
 		Spycicle,
 		InvisWatch,
+		EnthusiastsTimepiece,
+		Quackenbirdt,
 		CloakAndDagger,
 		DeadRinger,
 

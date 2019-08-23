@@ -85,6 +85,8 @@ const HUDHacking::ChargeBarInfo HUDHacking::s_ChargeBarInfo[(int)ChargeBarType::
 
 	ChargeBarInfo("spycicle", 2, "the Spy-cicle", "#TF_SpyCicle", 649, MeterType::Spycicle),
 	ChargeBarInfo("invis_watch", 1, "the Invis Watch", "#TF_Weapon_Watch", 30, MeterType::Cloak),
+	ChargeBarInfo("enthusiasts_timepiece", 1, "the Enthusiast's Timepiece", "#TF_Weapon_Watch", 297, MeterType::Cloak),
+	ChargeBarInfo("quackenbirdt", 1, "the Quackenbirdt", "#TF_Weapon_Watch", 947, MeterType::Cloak),
 	ChargeBarInfo("cloak_and_dagger", 1, "the Cloak and Dagger", "#TF_Unique_Achievement_CloakWatch", 60, MeterType::Cloak),
 	ChargeBarInfo("dead_ringer", 1, "the Dead Ringer", "#TF_Unique_Achievement_FeignWatch", 59, MeterType::Cloak),
 };
