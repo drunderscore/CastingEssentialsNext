@@ -10,9 +10,7 @@
 #pragma warning(disable : 4592)    // 'x': symbol will be dynamically initialized (implementation limitation)
 #pragma warning(disable : 4533)    // initialization of 'x' is skipped by 'instruction' -- should only be a warning, but is promoted error for some reason?
 
-//#define PLUGIN_VERSION "r7b1"
-
-static constexpr const char* PLUGIN_NAME = "CastingEssentialsRed";
+extern const char* const PLUGIN_NAME;
 extern const char* const PLUGIN_VERSION_ID;
 extern const char* const PLUGIN_FULL_VERSION;
 
@@ -24,7 +22,7 @@ static constexpr float NDEBUG_PERSIST_TILL_NEXT_FRAME = -1.738f;
 static constexpr float NDEBUG_PERSIST_TILL_NEXT_FRAME = 0; // NDEBUG_PERSIST_TILL_NEXT_SERVER
 #endif
 
-#define VPROF_BUDGETGROUP_CE _T("CastingEssentials")
+#define VPROF_BUDGETGROUP_CE _T(PLUGIN_NAME)
 
 // For passing into strspn or whatever
 static constexpr const char* WHITESPACE_CHARS = "\t\n\v\f\r ";

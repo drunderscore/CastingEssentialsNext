@@ -37,6 +37,7 @@
 *.pdb
 /Release/
 /Debug/
+CastingEssentials/build
 CastingEssentials/Release/
 CastingEssentials/Debug/
 *.exp
