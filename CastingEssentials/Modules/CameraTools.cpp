@@ -485,6 +485,9 @@ void CameraTools::SpecClass(TFTeam team, TFClassType playerClass, int classIndex
 		if (player->GetTeam() != team || player->GetClass() != playerClass)
 			continue;
 
+		if (!player->IsAlive())
+			continue;
+
 		validPlayers[validPlayersCount++] = player;
 	}
 
