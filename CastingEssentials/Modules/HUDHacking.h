@@ -180,6 +180,10 @@ private:
 		Battalions,
 		Bleeding,
 		MarkedForDeath,
+		Burning,
+		Bonked,
+		Jarated,
+		Milked,
 
 		COUNT,
 	};

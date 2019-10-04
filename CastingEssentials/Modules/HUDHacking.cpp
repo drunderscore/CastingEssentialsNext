@@ -336,6 +336,10 @@ const char* HUDHacking::GetStatusEffectFormatString(StatusEffect effect)
 		case StatusEffect::Battalions:       return "%sbattalions_backup_%s";
 		case StatusEffect::Bleeding:         return "%sbleeding_%s";
 		case StatusEffect::MarkedForDeath:   return "%smarked_for_death_%s";
+		case StatusEffect::Burning:			 return "%sburning_%s";
+		case StatusEffect::Bonked:			 return "%sbonked_%s";
+		case StatusEffect::Jarated:			 return "%sjarated_%s";
+		case StatusEffect::Milked:			 return "%smilked_%s";
 	}
 
 	PluginWarning("Programmer error: Unknown StatusEffect %i in " __FUNCTION__ "()\n", (int)effect);
@@ -364,10 +368,18 @@ HUDHacking::StatusEffect HUDHacking::GetStatusEffect(const Player& player)
 			return StatusEffect::Concheror;
 		else if (player.CheckCondition(TFCond::TFCond_DefenseBuffed))
 			return StatusEffect::Battalions;
+		else if (player.CheckCondition(TFCond::TFCond_Bonked))
+			return StatusEffect::Bonked;
+		else if (player.CheckCondition(TFCond::TFCond_OnFire))
+			return StatusEffect::Burning;
 		else if (player.CheckCondition(TFCond::TFCond_Bleeding))
 			return StatusEffect::Bleeding;
 		else if (player.CheckCondition(TFCond::TFCond_MarkedForDeath) || player.CheckCondition(TFCond::TFCond_MarkedForDeathSilent))
 			return StatusEffect::MarkedForDeath;
+		else if (player.CheckCondition(TFCond::TFCond_Jarated))
+			return StatusEffect::Jarated;
+		else if (player.CheckCondition(TFCond::TFCond_Milked))
+			return StatusEffect::Milked;
 	}
 
 	return StatusEffect::None;

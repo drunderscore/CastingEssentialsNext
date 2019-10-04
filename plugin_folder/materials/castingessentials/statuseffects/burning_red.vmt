@@ -1,0 +1,10 @@
+"UnlitGeneric"
+{
+	"$basetexture" "hud/leaderboard_class_pyro"
+	"$translucent" 1
+	"$ignorez" 1
+	
+	// Alternative icon
+	// "$basetexture" "cyoa/cyoa_pyro_icon"
+	// $color "{188 66 66}"
+}
