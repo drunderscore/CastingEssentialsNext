@@ -346,7 +346,7 @@ HUDHacking::StatusEffect HUDHacking::GetStatusEffect(const Player& player)
 {
 	if (player.IsAlive())
 	{
-		if (player.CheckCondition(TFCond::TFCond_Ubercharged) || player.CheckCondition(TFCond::TFCond_UberchargeFading))
+		if (player.CheckCondition(TFCond::TFCond_Ubercharged))
 			return StatusEffect::Ubered;
 		else if (player.CheckCondition(TFCond::TFCond_Kritzkrieged))
 			return StatusEffect::Kritzed;
