@@ -351,9 +351,23 @@ bool AutoCameras::LoadCamera(KeyValues* const camera, const char* const filename
 	}
 
 	const char* const mirror = camera->GetString("mirror", nullptr);
+	const char* const mirror_x = camera->GetString("mirror_x", nullptr);
+	const char* const mirror_y = camera->GetString("mirror_y", nullptr);
 	if (mirror)
 	{
 		newCamera->m_MirroredCameraName = mirror;
+		newCamera->m_MirrorX = true;
+		newCamera->m_MirrorY = true;
+	}
+	else if (mirror_x) {
+		newCamera->m_MirroredCameraName = mirror_x;
+		newCamera->m_MirrorX = true;
+		newCamera->m_MirrorY = false;
+	}
+	else if (mirror_y) {
+		newCamera->m_MirroredCameraName = mirror_y;
+		newCamera->m_MirrorX = false;
+		newCamera->m_MirrorY = true;
 	}
 	else
 	{
@@ -1317,10 +1331,26 @@ void AutoCameras::SetupMirroredCameras()
 		Camera* cameraEdit = const_cast<Camera*>(camera.get());
 
 		const Vector relativeBasePos = camToMirror->m_Pos - m_MapOrigin;
-		cameraEdit->m_Pos = Vector(-relativeBasePos.x, -relativeBasePos.y, relativeBasePos.z) + m_MapOrigin;
+		cameraEdit->m_Pos = m_MapOrigin + Vector(
+			(cameraEdit->m_MirrorX ? -1.0 : 1.0) * relativeBasePos.x,
+			(cameraEdit->m_MirrorY ? -1.0 : 1.0) * relativeBasePos.y,
+			relativeBasePos.z
+		);
+
+		auto angle = camToMirror->m_DefaultAngle.y;
+		if (cameraEdit->m_MirrorX && cameraEdit->m_MirrorY) {
+			angle = angle + 180.0f;
+		}
+		else if (cameraEdit->m_MirrorX) {
+			angle = 180.0f - angle;
+		}
+		else if (cameraEdit->m_MirrorY) {
+			angle = -angle;
+		}
+
 		cameraEdit->m_DefaultAngle = QAngle(
 			AngleNormalize(camToMirror->m_DefaultAngle.x),
-			AngleNormalize(camToMirror->m_DefaultAngle.y + 180),
+			AngleNormalize(angle),
 			AngleNormalize(camToMirror->m_DefaultAngle.z));
 	}
 }

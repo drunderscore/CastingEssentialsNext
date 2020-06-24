@@ -121,6 +121,8 @@ private:
 
 		std::string m_MirroredCameraName;
 		Camera* m_CameraToMirror;
+		bool m_MirrorX;
+		bool m_MirrorY;
 	};
 	std::vector<std::unique_ptr<const Camera>> m_Cameras;
 	std::vector<std::string> m_MalformedCameras;
