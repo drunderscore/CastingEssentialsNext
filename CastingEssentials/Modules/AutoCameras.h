@@ -120,7 +120,6 @@ private:
 		float m_FOV;
 
 		std::string m_MirroredCameraName;
-		Camera* m_CameraToMirror;
 		bool m_MirrorX;
 		bool m_MirrorY;
 	};

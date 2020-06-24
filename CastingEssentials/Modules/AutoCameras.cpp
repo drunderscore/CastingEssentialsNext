@@ -1311,48 +1311,67 @@ std::vector<const AutoCameras::Camera*> AutoCameras::GetAlphabeticalCameras() co
 
 void AutoCameras::SetupMirroredCameras()
 {
-	for (const auto& camera : m_Cameras)
-	{
-		if (camera->m_MirroredCameraName.empty())
-			continue;
+	bool again;
+	do {
+		again = false;
 
-		const auto camToMirror = FindCamera(camera->m_MirroredCameraName.c_str());
-		if (!camToMirror)
+		for (const auto& camera : m_Cameras)
 		{
-			if (FindContainedString(m_MalformedCameras, camera->m_MirroredCameraName.c_str()))
-				PluginWarning("Unable to mirror camera \"%s\" because its base \"%s\" is malformed in \"%s\".\n", camera->m_Name.c_str(), camera->m_MirroredCameraName.c_str(), m_ConfigFilename.c_str());
-			else
-				PluginWarning("Unable to mirror camera \"%s\" because the base camera definition \"%s\" cannot be found in \"%s\".\n", camera->m_Name.c_str(), camera->m_MirroredCameraName.c_str(), m_ConfigFilename.c_str());
+			if (camera->m_MirroredCameraName.empty())
+				continue;
 
-			continue;
+			// bad programmer alert
+			Camera* cameraEdit = const_cast<Camera*>(camera.get());
+
+			const auto camToMirror = FindCamera(camera->m_MirroredCameraName.c_str());
+			if (!camToMirror)
+			{
+				if (FindContainedString(m_MalformedCameras, camera->m_MirroredCameraName.c_str()))
+					PluginWarning("Unable to mirror camera \"%s\" because its base \"%s\" is malformed in \"%s\".\n", camera->m_Name.c_str(), camera->m_MirroredCameraName.c_str(), m_ConfigFilename.c_str());
+				else
+					PluginWarning("Unable to mirror camera \"%s\" because the base camera definition \"%s\" cannot be found in \"%s\".\n", camera->m_Name.c_str(), camera->m_MirroredCameraName.c_str(), m_ConfigFilename.c_str());
+
+				// This camera is no good, so make sure it never gets treated as a mirror target. Also mark is as malformed.
+				cameraEdit->m_MirroredCameraName.clear();
+				m_MalformedCameras.push_back(camera->m_Name);
+
+				continue;
+			}
+
+			// If the camera we are mirror is itself a mirror, we need to do another iteration after this one.
+			if (!camToMirror->m_MirroredCameraName.empty()) {
+				again = true;
+				continue;
+			}
+
+			const Vector relativeBasePos = camToMirror->m_Pos - m_MapOrigin;
+			cameraEdit->m_Pos = m_MapOrigin + Vector(
+				(cameraEdit->m_MirrorX ? -1.0 : 1.0) * relativeBasePos.x,
+				(cameraEdit->m_MirrorY ? -1.0 : 1.0) * relativeBasePos.y,
+				relativeBasePos.z
+			);
+
+			auto angle = camToMirror->m_DefaultAngle.y;
+			if (cameraEdit->m_MirrorX && cameraEdit->m_MirrorY) {
+				angle = angle + 180.0f;
+			}
+			else if (cameraEdit->m_MirrorX) {
+				angle = 180.0f - angle;
+			}
+			else if (cameraEdit->m_MirrorY) {
+				angle = -angle;
+			}
+
+			cameraEdit->m_DefaultAngle = QAngle(
+				AngleNormalize(camToMirror->m_DefaultAngle.x),
+				AngleNormalize(angle),
+				AngleNormalize(camToMirror->m_DefaultAngle.z));
+
+			// Now that we updated this camera, it's no longer treated as a mirror
+			cameraEdit->m_MirroredCameraName.clear();
 		}
 
-		// bad programmer alert
-		Camera* cameraEdit = const_cast<Camera*>(camera.get());
-
-		const Vector relativeBasePos = camToMirror->m_Pos - m_MapOrigin;
-		cameraEdit->m_Pos = m_MapOrigin + Vector(
-			(cameraEdit->m_MirrorX ? -1.0 : 1.0) * relativeBasePos.x,
-			(cameraEdit->m_MirrorY ? -1.0 : 1.0) * relativeBasePos.y,
-			relativeBasePos.z
-		);
-
-		auto angle = camToMirror->m_DefaultAngle.y;
-		if (cameraEdit->m_MirrorX && cameraEdit->m_MirrorY) {
-			angle = angle + 180.0f;
-		}
-		else if (cameraEdit->m_MirrorX) {
-			angle = 180.0f - angle;
-		}
-		else if (cameraEdit->m_MirrorY) {
-			angle = -angle;
-		}
-
-		cameraEdit->m_DefaultAngle = QAngle(
-			AngleNormalize(camToMirror->m_DefaultAngle.x),
-			AngleNormalize(angle),
-			AngleNormalize(camToMirror->m_DefaultAngle.z));
-	}
+	}  while (again);
 }
 
 bool AutoCameras::FindContainedString(const std::vector<std::string>& vec, const char* str)
