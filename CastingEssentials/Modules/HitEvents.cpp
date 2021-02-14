@@ -200,6 +200,14 @@ void HitEvents::UpdateEnabledState()
 
 void HitEvents::FireGameEventOverride(CDamageAccountPanel* pThis, IGameEvent* event)
 {
+
+	if (auto it = std::find(m_EventsToIgnore.cbegin(), m_EventsToIgnore.cend(), event); it != m_EventsToIgnore.cend()) {
+		// We injected this event ourselves, ignore it.
+		m_FireGameEventHook.SetState(Hooking::HookAction::SUPERCEDE);
+		m_EventsToIgnore.erase(it);
+		return;
+	}
+
 	auto is_player_hurt = stricmp(event->GetName(), "player_hurt") == 0;
 
 	auto crossbow_only = ce_hitevents_healing_crossbow_only.GetBool();
@@ -251,7 +259,14 @@ void HitEvents::FireGameEventOverride(CDamageAccountPanel* pThis, IGameEvent* ev
 		}
 
 		newEvent->SetInt(is_player_hurt ? "attacker" : "healer", localPlayer->GetUserID());
+
 		m_FireGameEventHook.GetOriginal()(pThis, newEvent.get());
+
+		if (is_player_hurt) {
+			// We re-inject player hurt events with the updated info so that stuff like "crit!" sprites will show up.
+			m_EventsToIgnore.push_back(newEvent.get());
+			gameeventmanager->FireEventClientSide(newEvent.release()); // We need to release ownership here as FireEventClientSide will free the event!
+		}
 	}
 	else {
 		m_FireGameEventHook.SetState(Hooking::HookAction::IGNORE);
