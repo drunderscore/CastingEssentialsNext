@@ -102,7 +102,7 @@ private:
 	Hook<HookFunc::IStudioRender_ForcedMaterialOverride> m_ForcedMaterialOverrideHook;
 	void ForcedMaterialOverrideOverride(IMaterial* material, OverrideType_t overrideType);
 
-	Hook<HookFunc::C_BasePlayer_ShouldDrawLocalPlayer> m_ShouldDrawLocalPlayerHook;
+	Hook<HookFunc::C_BasePlayer_ShouldDrawThisPlayer> m_ShouldDrawLocalPlayerHook;
 	Hook<HookFunc::C_TFWeaponBase_PostDataUpdate> m_PostDataUpdateHook;
 	C_BaseEntity* m_LocalOwner{ nullptr };
 	void ToggleFixViewmodel(const ConVar* var);

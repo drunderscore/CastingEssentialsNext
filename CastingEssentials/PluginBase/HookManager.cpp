@@ -151,7 +151,6 @@ void HookManager::InitRawFunctionsList()
 	FindFunc<HookFunc::C_BaseAnimating_GetBoneCache>("\x55\x8B\xEC\x83\xEC\x10\x56\x8B\xF1\x57\xFF\xB6", "xxxxxxxxxxxx");
 	FindFunc<HookFunc::C_BaseAnimating_GetBonePosition>("\x55\x8B\xEC\x83\xEC\x30\x56\x6A\x00", "xxxxxxxxx");
 	FindFunc<HookFunc::C_BaseAnimating_GetSequenceActivityName>("\x55\x8B\xEC\x83\x7D\x08\xFF\x56\x8B\xF1\x75\x0A", "xxxxxxxxxxxx");
-	FindFunc<HookFunc::C_BaseAnimating_InternalDrawModel>("\x55\x8B\xEC\x81\xEC????\x53\x56\x57\x8B\xF9\xC6\x45\xFF\x00\x8B\x87", "xxxxx????xxxxxxxxxxx");
 	FindFunc<HookFunc::C_BaseAnimating_LockStudioHdr>("\x55\x8B\xEC\x83\xEC\x20\x56\x57\x6A\x01\x68????\x8B\xF1", "xxxxxxxxxxx????xx");
 	FindFunc<HookFunc::C_BaseAnimating_LookupBone>("\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x00\x00\x00\x00\x00\x74\x13\xFF\x75\x08\x33\xC0\x50\xE8\x00\x00\x00\x00\x83\xC4\x08\x5E\x5D\xC2\x04\x00\x83\xBE\x00\x00\x00\x00\x00\x75\x05\xE8\x00\x00\x00\x00\xFF\x75\x08\x8B\x86\x00\x00\x00\x00\x50\xE8\x00\x00\x00\x00\x83\xC4\x08\x5E\x5D\xC2\x04\x00", "xxxxxxxx?????xxxxxxxxx????xxxxxxxxxx?????xxx????xxxxx????xx????xxxxxxxx");
 
@@ -160,7 +159,7 @@ void HookManager::InitRawFunctionsList()
 
 	FindFunc<HookFunc::C_BasePlayer_GetDefaultFOV>("\x57\x8B\xF9\x8B\x07\xFF\x90????\x83\xF8\x04", "xxxxxxx????xxx");
 	FindFunc<HookFunc::C_BasePlayer_GetFOV>("\x55\x8B\xEC\x83\xEC\x10\x56\x8B\xF1\x8B\x0D????\x8B\x01", "xxxxxxxxxxx????xx");
-	FindFunc<HookFunc::C_BasePlayer_ShouldDrawLocalPlayer>("\x56\x57\x8B\x3D????\x8B\xF1\x3B\xFE\x74\x3F\x85\xFF\x0F\x84\xA5\x00\x00\x00\x8B\x07\x8B\xCF\xFF\x90\xC8\x03\x00\x00\x83\xF8\x04\x0F\x85\x92\x00\x00\x00", "xxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+	FindFunc<HookFunc::C_BasePlayer_ShouldDrawThisPlayer>("\x56\x57\x8B\x3D\x00\x00\x00\x00\x8B\xF1\x3B\xFE\x74\x3F\x85\xFF\x0F\x84\xA5\x00\x00\x00\x8B\x07\x8B\xCF\xFF\x90\xD0\x03\x00\x00\x83\xF8\x04\x0F\x85\x92\x00\x00\x00\x85\xF6", "xxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
 	FindFunc<HookFunc::C_HLTVCamera_SetCameraAngle>("\x55\x8B\xEC\x8B\x45\x08\x56\x8B\xF1\x8D\x56\x00\xD9\x00\xD9\x1A\xD9\x40\x00\xD9\x5A\x00\xD9\x40\x00\x52", "xxxxxxxxxxx?xxxxxx?xx?xx?x");
 	FindFunc<HookFunc::C_HLTVCamera_SetMode>("\x55\x8B\xEC\x8B\x45\x08\x53\x56\x8B\xF1\x8B\x5E\x00", "xxxxxxxxxxxx?");
@@ -275,9 +274,9 @@ HookManager::HookManager()
 
 	InitGlobalHook<HookFunc::C_BaseAnimating_DoInternalDrawModel>();
 	InitGlobalHook<HookFunc::C_BaseAnimating_DrawModel>();
-	InitGlobalHook<HookFunc::C_BaseAnimating_InternalDrawModel>();
+	//InitGlobalHook<HookFunc::C_BaseAnimating_InternalDrawModel>();
 	InitGlobalHook<HookFunc::C_BasePlayer_GetDefaultFOV>();
-	InitGlobalHook<HookFunc::C_BasePlayer_ShouldDrawLocalPlayer>();
+	InitGlobalHook<HookFunc::C_BasePlayer_ShouldDrawThisPlayer>();
 	InitGlobalHook<HookFunc::C_TFPlayer_DrawModel>();
 	InitGlobalHook<HookFunc::C_TFWeaponBase_PostDataUpdate>();
 

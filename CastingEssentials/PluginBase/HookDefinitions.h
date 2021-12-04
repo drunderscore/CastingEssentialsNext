@@ -80,7 +80,6 @@ enum class HookFunc
 	C_BaseAnimating_GetBoneCache,
 	C_BaseAnimating_GetBonePosition,
 	C_BaseAnimating_GetSequenceActivityName,
-	C_BaseAnimating_InternalDrawModel,
 	C_BaseAnimating_LockStudioHdr,
 	C_BaseAnimating_LookupBone,
 
@@ -90,7 +89,7 @@ enum class HookFunc
 	C_BasePlayer_GetDefaultFOV,
 	C_BasePlayer_GetFOV,
 	C_BasePlayer_GetLocalPlayer,
-	C_BasePlayer_ShouldDrawLocalPlayer,
+	C_BasePlayer_ShouldDrawThisPlayer,
 
 	C_HLTVCamera_SetCameraAngle,
 	C_HLTVCamera_SetMode,
@@ -323,11 +322,6 @@ protected:
 		typedef int(__thiscall *Raw)(C_BaseAnimating*, int);
 		typedef GlobalClassHook<HookFunc::C_BaseAnimating_DrawModel, false, C_BaseAnimating, int, int> Hook;
 	};
-	template<> struct HookFuncType<HookFunc::C_BaseAnimating_InternalDrawModel>
-	{
-		typedef int(__thiscall *Raw)(C_BaseAnimating* pThis, int flags);
-		typedef GlobalClassHook<HookFunc::C_BaseAnimating_InternalDrawModel, false, C_BaseAnimating, int, int> Hook;
-	};
 	template<> struct HookFuncType<HookFunc::C_BaseEntity_CalcAbsolutePosition>
 	{
 		typedef void(__thiscall *Raw)(C_BaseEntity* pThis);
@@ -351,10 +345,10 @@ protected:
 	{
 		typedef C_BasePlayer*(__cdecl *Raw)();
 	};
-	template<> struct HookFuncType<HookFunc::C_BasePlayer_ShouldDrawLocalPlayer>
+	template<> struct HookFuncType<HookFunc::C_BasePlayer_ShouldDrawThisPlayer>
 	{
 		typedef bool(__thiscall *Raw)(C_BasePlayer* pThis);
-		typedef GlobalClassHook<HookFunc::C_BasePlayer_ShouldDrawLocalPlayer, false, C_BasePlayer, bool> Hook;
+		typedef GlobalClassHook<HookFunc::C_BasePlayer_ShouldDrawThisPlayer, false, C_BasePlayer, bool> Hook;
 	};
 	template<> struct HookFuncType<HookFunc::C_TFPlayer_DrawModel>
 	{

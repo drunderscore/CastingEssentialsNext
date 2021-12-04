@@ -200,71 +200,77 @@ public:
 			Check(74, &C_BaseEntity::GetTeamNumber);
 			Check(83, &C_BaseEntity::Simulate);
 			Assert((offset = VTableOffset(&C_BaseEntity::DrawBrushModel)) == 101);
-			Assert((offset = VTableOffset(&C_BaseEntity::ValidateEntityAttachedToPlayer)) == 158);
+			Assert((offset = VTableOffset(&C_BaseEntity::SUB_Remove)) == 114);
+			Assert((offset = VTableOffset(&C_BaseEntity::DamageDecal)) == 117);
+			Assert((offset = VTableOffset(&C_BaseEntity::PhysicsSimulate)) == 129);
+			Assert((offset = VTableOffset(&C_BaseEntity::ShouldCollide)) == 145);
+			Assert((offset = VTableOffset(&C_BaseEntity::OnPredictedEntityRemove)) == 153);
+			Assert((offset = VTableOffset(&C_BaseEntity::ValidateEntityAttachedToPlayer)) == 160);
 		}
 
 		// C_BaseAnimating
 		{
-			Assert((offset = VTableOffset(&C_BaseAnimating::InternalDrawModel)) == 166);
-			Assert((offset = VTableOffset(&C_BaseAnimating::OnInternalDrawModel)) == 167);
-			Assert((offset = VTableOffset(&C_BaseAnimating::OnPostInternalDrawModel)) == 168);
-			Assert((offset = VTableOffset(&C_BaseAnimating::GetEconWeaponMaterialOverride)) == 169);
-			Assert((offset = VTableOffset(&C_BaseAnimating::AttachEntityToBone)) == 179);
-			Assert((offset = VTableOffset(&C_BaseAnimating::FrameAdvance)) == 189);
-			Assert((offset = VTableOffset(&C_BaseAnimating::GetServerIntendedCycle)) == 199);
-			Check(205, &C_BaseAnimating::LastBoneChangedTime);
+			Assert((offset = VTableOffset(&C_BaseAnimating::InternalDrawModel)) == 168);
+			Assert((offset = VTableOffset(&C_BaseAnimating::OnInternalDrawModel)) == 169);
+			Assert((offset = VTableOffset(&C_BaseAnimating::OnPostInternalDrawModel)) == 170);
+			Assert((offset = VTableOffset(&C_BaseAnimating::GetEconWeaponMaterialOverride)) == 171);
+			Assert((offset = VTableOffset(&C_BaseAnimating::AttachEntityToBone)) == 181);
+			Assert((offset = VTableOffset(&C_BaseAnimating::FrameAdvance)) == 191);
+			Assert((offset = VTableOffset(&C_BaseAnimating::GetServerIntendedCycle)) == 201);
+			Assert((offset = VTableOffset(&C_BaseAnimating::IsViewModel)) == 203);
+			Check(207, &C_BaseAnimating::LastBoneChangedTime);
 		}
 
 		// C_EconEntity
 		{
-			Check(206, &C_EconEntity::ShouldShowToolTip);
-			Check(209, &C_EconEntity::UpdateAttachmentModels);
-			Check(212, &C_EconEntity::IsOverridingViewmodel);
-			Check(213, &C_EconEntity::DrawOverriddenViewmodel);
+			Check(208, &C_EconEntity::ShouldShowToolTip);
+			Check(211, &C_EconEntity::UpdateAttachmentModels);
+			Check(214, &C_EconEntity::IsOverridingViewmodel);
+			Check(215, &C_EconEntity::DrawOverriddenViewmodel);
 		}
 
 		// C_BasePlayer
 		{
-			Assert((offset = VTableOffset(&C_BasePlayer::GetEconWeaponMaterialOverride)) == 169);
-			Assert((offset = VTableOffset(&C_BasePlayer::ControlMouth)) == 170);
-			Assert((offset = VTableOffset(&C_BasePlayer::DoAnimationEvents)) == 171);
-			Assert((offset = VTableOffset(&C_BasePlayer::FireEvent)) == 172);
-			Assert((offset = VTableOffset(&C_BasePlayer::BecomeRagdollOnClient)) == 182);
-			Assert((offset = VTableOffset(&C_BasePlayer::ComputeClientSideAnimationFlags)) == 192);
-			Assert((offset = VTableOffset(&C_BasePlayer::DoMuzzleFlash)) == 196);
-			Assert((offset = VTableOffset(&C_BasePlayer::FormatViewModelAttachment)) == 202);
-			Assert((offset = VTableOffset(&C_BasePlayer::CalcAttachments)) == 204);
-			Assert((offset = VTableOffset(&C_BasePlayer::LastBoneChangedTime)) == 205);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetEconWeaponMaterialOverride)) == 171);
+			Assert((offset = VTableOffset(&C_BasePlayer::ControlMouth)) == 172);
+			Assert((offset = VTableOffset(&C_BasePlayer::DoAnimationEvents)) == 173);
+			Assert((offset = VTableOffset(&C_BasePlayer::FireEvent)) == 174);
+			Assert((offset = VTableOffset(&C_BasePlayer::BecomeRagdollOnClient)) == 184);
+			Assert((offset = VTableOffset(&C_BasePlayer::ComputeClientSideAnimationFlags)) == 194);
+			Assert((offset = VTableOffset(&C_BasePlayer::DoMuzzleFlash)) == 198);
+			Assert((offset = VTableOffset(&C_BasePlayer::FormatViewModelAttachment)) == 204);
+			Assert((offset = VTableOffset(&C_BasePlayer::CalcAttachments)) == 206);
+			Assert((offset = VTableOffset(&C_BasePlayer::LastBoneChangedTime)) == 207);
 			//Assert((offset = VTableOffset(&C_BasePlayer::OnModelLoadComplete)) == 206);
-			Assert((offset = VTableOffset(&C_BasePlayer::InitPhonemeMappings)) == 206);
-			Assert((offset = VTableOffset(&C_BasePlayer::SetViewTarget)) == 209);
-			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSceneEvents)) == 211);
-			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSceneEvent)) == 212);
-			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSequenceSceneEvent)) == 213);
-			Assert((offset = VTableOffset(&C_BasePlayer::ClearSceneEvent)) == 214);
-			Assert((offset = VTableOffset(&C_BasePlayer::CheckSceneEventCompletion)) == 215);
+			Assert((offset = VTableOffset(&C_BasePlayer::InitPhonemeMappings)) == 208);
+			Assert((offset = VTableOffset(&C_BasePlayer::SetViewTarget)) == 211);
+			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSceneEvents)) == 213);
+			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSceneEvent)) == 214);
+			Assert((offset = VTableOffset(&C_BasePlayer::ProcessSequenceSceneEvent)) == 215);
+			Assert((offset = VTableOffset(&C_BasePlayer::ClearSceneEvent)) == 216);
+			Assert((offset = VTableOffset(&C_BasePlayer::CheckSceneEventCompletion)) == 217);
 			//Assert((offset = VTableOffset(&C_BasePlayer::EnsureTranslations)) == 216);
-			Assert((offset = VTableOffset(&C_BasePlayer::Weapon_Switch)) == 222);
-			Assert((offset = VTableOffset(&C_BasePlayer::Weapon_CanSwitchTo)) == 223);
-			Assert((offset = VTableOffset(&C_BasePlayer::GetActiveWeapon)) == 224);
-			Assert((offset = VTableOffset(&C_BasePlayer::GetGlowEffectColor)) == 225);
-			Assert((offset = VTableOffset(&C_BasePlayer::UpdateGlowEffect)) == 226);
-			Assert((offset = VTableOffset(&C_BasePlayer::DestroyGlowEffect)) == 227);
-			Assert((offset = VTableOffset(&C_BasePlayer::SharedSpawn)) == 228);
-			Assert((offset = VTableOffset(&C_BasePlayer::GetSteamID)) == 229);
-			Assert((offset = VTableOffset(&C_BasePlayer::GetPlayerMaxSpeed)) == 230);
-			Assert((offset = VTableOffset(&C_BasePlayer::CalcView)) == 231);
-			Assert((offset = VTableOffset(&C_BasePlayer::CalcViewModelView)) == 232);
-			Assert((offset = VTableOffset(&C_BasePlayer::PlayerUse)) == 240);
-			Check(249, &C_BasePlayer::IsOverridingViewmodel);
-			Assert((offset = VTableOffset(&C_BasePlayer::DrawOverriddenViewmodel)) == 250);
-			Assert((offset = VTableOffset(&C_BasePlayer::ItemPreFrame)) == 260);
-			Assert((offset = VTableOffset(&C_BasePlayer::GetFOV)) == 270);
+			Assert((offset = VTableOffset(&C_BasePlayer::Weapon_Switch)) == 224);
+			Assert((offset = VTableOffset(&C_BasePlayer::Weapon_CanSwitchTo)) == 225);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetActiveWeapon)) == 226);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetGlowEffectColor)) == 227);
+			Assert((offset = VTableOffset(&C_BasePlayer::UpdateGlowEffect)) == 228);
+			Assert((offset = VTableOffset(&C_BasePlayer::DestroyGlowEffect)) == 229);
+			Assert((offset = VTableOffset(&C_BasePlayer::SharedSpawn)) == 230);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetSteamID)) == 231);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetPlayerMaxSpeed)) == 232);
+			Assert((offset = VTableOffset(&C_BasePlayer::CalcView)) == 233);
+			Assert((offset = VTableOffset(&C_BasePlayer::CalcViewModelView)) == 234);
+			Assert((offset = VTableOffset(&C_BasePlayer::PlayerUse)) == 242);
+			Check(251, &C_BasePlayer::IsOverridingViewmodel);
+			Assert((offset = VTableOffset(&C_BasePlayer::DrawOverriddenViewmodel)) == 252);
+			Assert((offset = VTableOffset(&C_BasePlayer::ItemPreFrame)) == 262);
+			Assert((offset = VTableOffset(&C_BasePlayer::GetFOV)) == 272);
 		}
 
 		// C_BaseViewModel
 		{
-			Check(207, &C_BaseViewModel::SetWeaponModel);
+			Check(209, &C_BaseViewModel::SetWeaponModel);
 		}
 	}
 };

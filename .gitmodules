@@ -6,3 +6,5 @@
 	path = polyhook
 url=https://github.com/PazerOP/PolyHook
 	branch = master
+[submodule "sdk2013/"]
+	url = https://github.com/dalegaard/source-sdk-2013.git

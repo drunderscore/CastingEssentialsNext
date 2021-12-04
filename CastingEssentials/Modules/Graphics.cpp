@@ -1016,6 +1016,7 @@ void Graphics::BuildMoveChildLists()
 		if (!child || !child->ShouldDraw())
 			continue;
 
+
 		if (auto childAnimating = child->GetBaseAnimating())
 		{
 			if (childAnimating->IsViewModel() || s_TFViewModelType.Match(childAnimating))
