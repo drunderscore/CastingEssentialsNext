@@ -12,9 +12,17 @@
 #include <vgui_controls/ImagePanel.h>
 #include <vgui_controls/ProgressBar.h>
 
-#define OFFSET_CHECK(className, memberName, expectedOffset)														\
-	static_assert(!(offsetof(className, memberName) > expectedOffset), "Actual offset greater than expected!");	\
-	static_assert(!(offsetof(className, memberName) < expectedOffset), "Actual offset less than expected!");
+template<int A, int B, typename E = void>
+struct CheckEqual;
+
+template<int A, int B>
+struct CheckEqual<A, B, typename std::enable_if<A == B>::type> {};
+
+#define OFFSET_CHECK(className, memberName, expectedOffset) \
+	static_assert(sizeof(CheckEqual<offsetof(className, memberName), expectedOffset>), "Actual size differs from expected");
+
+#define SIZE_CHECK(className, expectedSize) \
+	static_assert(sizeof(CheckEqual<sizeof(className), expectedSize>), "Actual size differs from expected");
 
 // Don't trust intellisense... just use the actual errors the compiler emits and
 // adjust your padding until you get it right
@@ -28,6 +36,7 @@ class OffsetChecking
 	OFFSET_CHECK(C_BaseAnimating, m_nHitboxSet, 1376);
 	OFFSET_CHECK(C_BaseAnimating, m_bDynamicModelPending, 2185);
 	OFFSET_CHECK(C_BaseAnimating, m_pStudioHdr, 2192);
+	OFFSET_CHECK(C_BaseAnimating, m_flFadeScale, 1544);
 
 	OFFSET_CHECK(C_EconEntity, m_AttributeManager, 2232);
 	OFFSET_CHECK(C_EconEntity, m_bValidatedAttachedEntity, 2560);
@@ -57,11 +66,20 @@ class OffsetChecking
 
 	OFFSET_CHECK(C_BaseCombatWeapon, m_hOwner, 2640);
 
-	OFFSET_CHECK(C_BasePlayer, m_iFOVStart, 4152);
-	OFFSET_CHECK(C_BasePlayer, m_iDefaultFOV, 4160);
-	OFFSET_CHECK(C_BasePlayer, m_pCurrentCommand, 4220);
-	OFFSET_CHECK(C_BasePlayer, m_hVehicle, 4300);
-	OFFSET_CHECK(C_BasePlayer, m_hViewModel, 4472);
+	SIZE_CHECK(CPlayerLocalData, 740);
+	OFFSET_CHECK(C_BasePlayer, m_vecViewOffset, 252);
+	OFFSET_CHECK(C_BasePlayer, m_flFriction, 648);
+	OFFSET_CHECK(C_BasePlayer, m_Local, 3612);
+	OFFSET_CHECK(C_BasePlayer, m_iFOVStart, 4416);
+	OFFSET_CHECK(C_BasePlayer, m_iDefaultFOV, 4424);
+	OFFSET_CHECK(C_BasePlayer, m_pCurrentCommand, 4484);
+	OFFSET_CHECK(C_BasePlayer, m_hVehicle, 4564);
+	OFFSET_CHECK(C_BasePlayer, m_iv_vecViewOffset, 4588);
+	OFFSET_CHECK(C_BasePlayer, m_hViewModel, 4736);
+
+	OFFSET_CHECK(C_BaseAnimatingOverlay, m_AnimOverlay, 2216);
+	OFFSET_CHECK(C_BaseFlex, m_flexWeight, 2384);
+	OFFSET_CHECK(C_BaseFlex, m_viewtarget, 2324);
 
 	OFFSET_CHECK(C_BaseViewModel, m_nViewModelIndex, 2232);
 	OFFSET_CHECK(C_BaseViewModel, m_nAnimationParity, 2248);
