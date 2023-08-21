@@ -198,6 +198,8 @@ void HookManager::InitRawFunctionsList()
 	FindFunc<HookFunc::vgui_Panel_FindChildByName>("\x55\x8B\xEC\x83\xEC\x28\xA1????\x53\x8B\xD9\x33\xC9", "xxxxxxx????xxxxx");
 	FindFunc<HookFunc::vgui_ProgressBar_ApplySettings>("\x55\x8B\xEC\xD9\xEE\x53", "xxxxxx");
 
+	FindFunc<HookFunc::CStorePanel_RequestPricesheet>("\x57\xE8????\x8B\xC8\x8B\x10\xFF\x52\x2C\x68\x10\x01\x00\x00\xE8????\x8B\xF8\x83\xC4\x04\x85\xFF\x74\x48\x56", "xx????xxxxxxxxxxxxx????xxxxxxxxxx");
+
 	FindFunc_C_BasePlayer_GetLocalPlayer();
 }
 
@@ -306,4 +308,6 @@ HookManager::HookManager()
 
 	InitGlobalHook<HookFunc::vgui_Panel_FindChildByName>();
 	InitGlobalHook<HookFunc::vgui_ProgressBar_ApplySettings>();
+
+	InitGlobalHook<HookFunc::CStorePanel_RequestPricesheet>();
 }

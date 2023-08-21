@@ -44,7 +44,8 @@ Killstreaks::Killstreaks() :
 	ce_killstreaks_hide_firstperson_effects("ce_killstreaks_hide_firstperson_effects", "0", FCVAR_NONE,
 		"Don't show professional killstreak eye effects in the middle of the screen for the person we're spectating when in firstperson camera mode."),
 
-	m_FireEventClientSideHook(std::bind(&Killstreaks::FireEventClientSideOverride, this, std::placeholders::_1))
+	m_FireEventClientSideHook(std::bind(&Killstreaks::FireEventClientSideOverride, this, std::placeholders::_1, std::placeholders::_2)),
+	m_RequestPriceSheetHook(std::bind(&Killstreaks::RequestPriceSheetOverride, this, std::placeholders::_1))
 {
 }
 
@@ -141,6 +142,7 @@ void Killstreaks::UpdateKillstreaks(bool inGame)
 	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_CE);
 	if (inGame)
 	{
+		m_RequestPriceSheetHook.Enable();
 		m_FireEventClientSideHook.Enable();
 
 		Assert(TFPlayerResource::GetPlayerResource());
@@ -188,10 +190,11 @@ void Killstreaks::UpdateKillstreaks(bool inGame)
 	{
 		m_CurrentKillstreaks.clear();
 		m_FireEventClientSideHook.Disable();
+		m_RequestPriceSheetHook.Disable();
 	}
 }
 
-bool Killstreaks::FireEventClientSideOverride(IGameEvent *event)
+bool Killstreaks::FireEventClientSideOverride(IGameEventManager2* pThis, IGameEvent* event)
 {
 	Assert(event);
 	if (!event)
@@ -330,4 +333,8 @@ bool Killstreaks::FireEventClientSideOverride(IGameEvent *event)
 	}
 
 	return true;
+}
+
+void Killstreaks::RequestPriceSheetOverride(CStorePanel*) {
+	m_RequestPriceSheetHook.SetState(Hooking::HookAction::SUPERCEDE);
 }

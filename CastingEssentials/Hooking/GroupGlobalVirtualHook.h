@@ -76,7 +76,7 @@ namespace Hooking
 		GroupGlobalVirtualHook() = delete;
 		GroupGlobalVirtualHook(const SelfType& other) = delete;
 
-		DetourFnType DefaultDetourFn() override { return Internal::SharedLocalDetourFn<SelfType, Type, RetVal, Args...>(this); }
+		DetourFnType DefaultDetourFn() override { return SharedLocalDetourFn(); }
 	};
 
 #if 0

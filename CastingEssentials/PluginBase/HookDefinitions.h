@@ -62,6 +62,8 @@ class IStudioRender;
 class IMaterial;
 class IClientRenderable;
 class C_TFPlayer;
+class CClientState;
+class CStorePanel;
 
 namespace vgui
 {
@@ -162,6 +164,8 @@ enum class HookFunc
 	vgui_Panel_FindChildByName,
 	vgui_ProgressBar_ApplySettings,
 
+	CStorePanel_RequestPricesheet,
+
 	Count,
 };
 
@@ -219,7 +223,8 @@ protected:
 	};
 	template<> struct HookFuncType<HookFunc::IGameEventManager2_FireEventClientSide>
 	{
-		typedef VirtualHook<HookFunc::IGameEventManager2_FireEventClientSide, false, IGameEventManager2, bool, IGameEvent*> Hook;
+		typedef bool(__thiscall* Raw)(IGameEventManager2* pThis, IGameEvent* event);
+		typedef GlobalVirtualHook<HookFunc::IGameEventManager2_FireEventClientSide, false, IGameEventManager2, bool, IGameEvent*> Hook;
 	};
 	template<> struct HookFuncType<HookFunc::IGameSystem_Add>
 	{
@@ -473,5 +478,10 @@ protected:
 	{
 		typedef void(__cdecl *Raw)(IClientRenderable* pEnt, bool bTwoPass, bool bShadowDepth, bool bIgnoreDepth);
 		typedef GlobalHook<HookFunc::Global_DrawTranslucentRenderable, false, void, IClientRenderable*, bool, bool, bool> Hook;
+	};
+	template<> struct HookFuncType<HookFunc::CStorePanel_RequestPricesheet>
+	{
+		typedef void(__thiscall* Raw)(CStorePanel* pThis);
+		typedef GlobalClassHook<HookFunc::CStorePanel_RequestPricesheet, false, CStorePanel, void> Hook;
 	};
 };

@@ -31,7 +31,8 @@ private:
 	ConVar ce_killstreaks_hide_firstperson_effects;
 	void HideFirstPersonEffects() const;
 
-	bool FireEventClientSideOverride(IGameEvent *event);
+	bool FireEventClientSideOverride(IGameEventManager2* pThis, IGameEvent *event);
+	void RequestPriceSheetOverride(CStorePanel*);
 
 	int m_BluTopKillstreak;
 	int m_BluTopKillstreakPlayer;
@@ -40,6 +41,7 @@ private:
 
 	std::map<int, int> m_CurrentKillstreaks;
 	Hook<HookFunc::IGameEventManager2_FireEventClientSide> m_FireEventClientSideHook;
+	Hook<HookFunc::CStorePanel_RequestPricesheet> m_RequestPriceSheetHook;
 
 	static std::array<EntityOffset<int>, 4> s_PlayerStreaks;
 	static EntityOffset<bool> s_MedigunHealing;
