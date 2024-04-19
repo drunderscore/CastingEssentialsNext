@@ -27,7 +27,7 @@ namespace Hooking
 
 		static Internal::LocalDetourFnPtr<Type, RetVal, Args...> SharedLocalDetourFn()
 		{
-			return [](Type* pThis, void*, Args... args)
+			return [](Type* pThis, Args... args)
 			{
 				Assert(This()->GetType() == HookType::GlobalClass || This()->GetType() == HookType::VirtualGlobal);
 				return HookFunctionsInvoker<RetVal>::Invoke(pThis, args...);

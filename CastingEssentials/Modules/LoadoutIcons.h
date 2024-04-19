@@ -11,7 +11,7 @@ namespace vgui
 	class Panel;
 	class ImagePanel;
 	class EditablePanel;
-	typedef unsigned int VPANEL;
+	typedef uintptr_t VPANEL;
 }
 
 class LoadoutIcons : public Module<LoadoutIcons>

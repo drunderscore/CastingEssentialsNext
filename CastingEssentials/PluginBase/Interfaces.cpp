@@ -52,7 +52,7 @@ bool Interfaces::steamLibrariesAvailable = false;
 bool Interfaces::vguiLibrariesAvailable = false;
 
 IClientMode* Interfaces::s_ClientMode = nullptr;
-C_HLTVCamera** Interfaces::s_HLTVCamera = nullptr;
+C_HLTVCamera* Interfaces::s_HLTVCamera = nullptr;
 C_HLTVCamera* HLTVCamera() { return Interfaces::GetHLTVCamera(); }
 
 CClientEntityList* cl_entitylist;
@@ -163,8 +163,8 @@ IClientMode* Interfaces::GetClientMode()
 {
 	if (!s_ClientMode)
 	{
-		constexpr const char* SIG = "\xA1????\xA8\x01\x75\x1F\x83\xC8\x01\xB9????\xA3????\xE8????\x68????\xE8????\x83\xC4\x04\xB8????\xC3\xCC\xCC\x8B\x0D????";
-		constexpr const char* MASK = "x????xxxxxxxx????x????x????x????x????xxxx????xxxxx????";
+		constexpr const char* SIG = "\x40\x53\x48\x83\xEC\x30\x8B\x00\x00\x00\x00\x00\xA8\x01\x0F\x00\x00\x00\x00\x00\x83\xC8\x01\x48\x00\x00\x00\x00\x00\x00\x48\x8B\xCB\x89\x00\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x33\xC9\x48\x00\x00\x00\x00\x00\x00\x0F\x57\xC0";
+		constexpr const char* MASK = "xxxxxxx?????xxx?????xxxx??????xxxx?????x????xxx??????xxx";
 		constexpr auto OFFSET = 0;
 
 		typedef IClientMode* (*GetClientModeFn)();
@@ -188,36 +188,39 @@ HLTVCameraOverride* Interfaces::GetHLTVCamera()
 {
 	if (!s_HLTVCamera)
 	{
-		constexpr const char* SIG = "\xB9\x00\x00\x00\x00\xE8\x00\x00\x00\x00\x68\x00\x00\x00\x00\xC7\x05\x00\x00\x00\x00\x00\x00\x00\x00\xC6\x05\x00\x00\x00\x00\x00";
-		constexpr const char* MASK = "x????x????x????xx????xxxxxx????x";
-		constexpr auto OFFSET = 1;
+		constexpr const char* SIG = "\x83\x3B\x02\x74\x00\x48\x00\x00\x00\x00\x00\x00\x48\x83\xC4\x20\x5B\x48\x00\x00\x00\x00\x00\x00\x48\x00\x00\x00\x00\x00\x00\x48\x8B\x01\xFF\x90\xB0\x02\x00\x00\x84\xC0\x74\x00\xE8\x00\x00\x00\x00\x48\x8B\xC8";
+		constexpr const char* MASK = "xxxx?x??????xxxxxx??????x??????xxxxxxxxxxxx?x????xxx";
+		constexpr uintptr_t OFFSET = 44;
 
-		s_HLTVCamera = (C_HLTVCamera**)((char*)SignatureScan("client", SIG, MASK) + OFFSET);
+		auto address_of_call = reinterpret_cast<uintptr_t>(SignatureScan("client", SIG, MASK)) + OFFSET;
+		if(address_of_call == OFFSET)
+			throw bad_pointer("HLTVCamera()");
 
-		if (s_HLTVCamera == (C_HLTVCamera**)OFFSET)
-			throw bad_pointer("C_HLTVCamera");
+		auto relative_address_in_call = *reinterpret_cast<uint32_t*>(address_of_call + 1);
+
+		typedef C_HLTVCamera* (*C_HLTVCameraSingletonGetterFn)();
+		auto hltv_camera_getter = reinterpret_cast<C_HLTVCameraSingletonGetterFn>((address_of_call + 4 + relative_address_in_call) - 0xFFFFFFFF);
+		s_HLTVCamera = hltv_camera_getter();
 	}
 
-	C_HLTVCamera* deref = *s_HLTVCamera;
-	if (!deref)
+	if (!s_HLTVCamera)
 		throw bad_pointer("C_HLTVCamera");
 
-	return (HLTVCameraOverride*)deref;
+	return (HLTVCameraOverride*)s_HLTVCamera;
 }
 
 C_BasePlayer*& Interfaces::GetLocalPlayer()
 {
-	static C_BasePlayer** s_LocalPlayer = nullptr;
+	static C_BasePlayer* s_LocalPlayer = nullptr;
 	if (!s_LocalPlayer)
 	{
-		auto localPlayerFn = HookManager::GetRawFunc<HookFunc::C_BasePlayer_GetLocalPlayer>();
+		typedef C_BasePlayer* (*C_BasePlayer_GetLocalPlayer)();
+		auto localPlayerFn = reinterpret_cast<C_BasePlayer_GetLocalPlayer>(HookManager::GetRawFunc<HookFunc::C_BasePlayer_GetLocalPlayer>());
 
-		auto location = *(intptr_t*)((std::byte*)localPlayerFn + 1);
-
-		s_LocalPlayer = (C_BasePlayer**)location;
+		s_LocalPlayer = localPlayerFn();
 	}
 
-	return *s_LocalPlayer;
+	return s_LocalPlayer;
 }
 
 cmdalias_t** Interfaces::GetCmdAliases()
@@ -237,20 +240,27 @@ cmdalias_t** Interfaces::GetCmdAliases()
 
 C_GameRules* Interfaces::GetGameRules()
 {
-	static C_GameRules** s_GameRules = nullptr;
+	static C_GameRules* s_GameRules = nullptr;
 	if (!s_GameRules)
 	{
-		constexpr const char* SIG = "\x8B\x0D????\x8B\x01\x8B\x80????\xFF\xD0\x84\xC0\x74\x1E";
-		constexpr const char* MASK = "xx????xxxx????xxxxxx";
-		constexpr auto OFFSET = 2;
+		constexpr const char* SIG = "\xF3\x0F\x10\x30\xF3\x0F\x10\x78\x04\xF3\x44\x0F\x10\x40\x08\x48\x8B\x07\xFF\x90\x10\x04\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x84\xC0\x48\x8B\x01";
+		constexpr const char* MASK = "xxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxx";
+		constexpr uintptr_t OFFSET = 24;
 
-		if (auto gr = (std::byte*)SignatureScan("client", SIG, MASK))
-			s_GameRules = *(C_GameRules***)(gr + OFFSET);
+		if (auto gr = reinterpret_cast<uintptr_t>(SignatureScan("client", SIG, MASK)))
+		{
+			gr += OFFSET;
+			auto relativeOffset = *reinterpret_cast<int32_t*>(gr + 3);
+
+			s_GameRules = *reinterpret_cast<C_GameRules**>(gr + relativeOffset + 7);
+		}
 		else
+		{
 			throw bad_pointer("C_GameRules");
+		}
 	}
 
-	return *s_GameRules;
+	return s_GameRules;
 }
 
 CUtlVector<IGameSystem*>* Interfaces::GetGameSystems()

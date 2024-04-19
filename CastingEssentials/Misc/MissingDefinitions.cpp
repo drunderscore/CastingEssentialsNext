@@ -14,6 +14,7 @@
 #include <networkvar.h>
 #include <steam/steamclientpublic.h>
 #include <util_shared.h>
+#include <toolframework/ienginetool.h>
 
 ConVar r_visualizetraces("r_visualizetraces", "0", FCVAR_CHEAT);
 
@@ -260,6 +261,24 @@ bool IsBoxIntersectingBox(const Vector& boxMin1, const Vector& boxMax1,
 	return true;
 }
 
+void NormalizeAngles( QAngle& angles )
+{
+	int i;
+
+	// Normalize angles to -180 to 180 range
+	for ( i = 0; i < 3; i++ )
+	{
+		if ( angles[i] > 180.0 )
+		{
+			angles[i] -= 360.0;
+		}
+		else if ( angles[i] < -180.0 )
+		{
+			angles[i] += 360.0;
+		}
+	}
+}
+
 void C_BaseAnimating::GetBonePosition(int iBone, Vector &origin, QAngle &angles)
 {
 	return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetBonePosition>()(this, iBone, origin, angles);
@@ -308,6 +327,11 @@ const char* C_BaseAnimating::GetSequenceActivityName(int iSequence)
 	return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetSequenceActivityName>()(this, iSequence);
 }
 
+Activity C_BaseAnimating::GetSequenceActivity(int iSequence)
+{
+	return static_cast<Activity>(HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetSequenceActivity>()(this, iSequence));
+}
+
 CBasePlayer *UTIL_PlayerByIndex(int entindex)
 {
 	return ToBasePlayer(ClientEntityList().GetEnt(entindex));
@@ -347,7 +371,10 @@ void C_HLTVCamera::SetMode(int mode)
 }
 void C_HLTVCamera::SetCameraAngle(QAngle& ang)
 {
-	return HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetCameraAngle>()(this, ang);
+	// This has been inlined by the compiler -- reimplement it ourself.
+	m_aCamAngle	= ang;
+	NormalizeAngles( m_aCamAngle );
+	m_flLastAngleUpdateTime = Interfaces::GetEngineTool()->GetRealTime();
 }
 void CSteamID::SetFromString(const char* pchSteamID, EUniverse eDefaultUniverse)
 {

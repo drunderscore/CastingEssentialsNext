@@ -1,0 +1,3 @@
+extern const char* const PLUGIN_NAME = "CastingEssentialsNext";
+extern const char* const PLUGIN_VERSION_ID = "@GIT_SHA1_SHORT@";
+extern const char* const PLUGIN_FULL_VERSION = "CastingEssentialsNext @GIT_SHA1_SHORT@";

@@ -12,7 +12,7 @@ enum class TFTeam;
 
 namespace vgui
 {
-	typedef unsigned int VPANEL;
+	typedef uintptr_t VPANEL;
 	class EditablePanel;
 }
 

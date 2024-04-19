@@ -257,12 +257,12 @@ void MedigunInfo::MainPanel::ApplySettings(KeyValues *inResourceData)
 	GetSize(wide, tall);
 
 	GetPos(redBaseX, redBaseY);
-	ComputePos(inResourceData->GetString("red_base_x"), redBaseX, wide, alignScreenWide, true);
-	ComputePos(inResourceData->GetString("red_base_y"), redBaseY, tall, alignScreenTall, false);
+	ComputePos(this, inResourceData->GetString("red_base_x"), redBaseX, wide, alignScreenWide, true, vgui::OP_SET);
+	ComputePos(this, inResourceData->GetString("red_base_y"), redBaseY, tall, alignScreenTall, false, vgui::OP_SET);
 
 	GetPos(bluBaseX, bluBaseY);
-	ComputePos(inResourceData->GetString("blu_base_x"), bluBaseX, wide, alignScreenWide, true);
-	ComputePos(inResourceData->GetString("blu_base_y"), bluBaseY, tall, alignScreenTall, false);
+	ComputePos(this, inResourceData->GetString("blu_base_x"), bluBaseX, wide, alignScreenWide, true, vgui::OP_SET);
+	ComputePos(this, inResourceData->GetString("blu_base_y"), bluBaseY, tall, alignScreenTall, false, vgui::OP_SET);
 
 	redOffsetX = g_pVGuiSchemeManager->GetProportionalScaledValue(inResourceData->GetInt("red_offset_x"));
 	redOffsetY = g_pVGuiSchemeManager->GetProportionalScaledValue(inResourceData->GetInt("red_offset_y"));

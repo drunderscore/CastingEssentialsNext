@@ -81,16 +81,6 @@ bool CameraSmooths::CheckDependencies()
 
 	try
 	{
-		HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetCameraAngle>();
-	}
-	catch (bad_pointer)
-	{
-		PluginWarning("Required function C_HLTVCamera::SetCameraAngle for module %s not available!\n", GetModuleName());
-		ready = false;
-	}
-
-	try
-	{
 		HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetMode>();
 	}
 	catch (bad_pointer)

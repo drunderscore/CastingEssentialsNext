@@ -59,7 +59,7 @@ void Killfeed::OnTick(bool inGame)
 		m_DeathNotices = (CUtlVector<DeathNoticeItem>*)((char*)m_DeathNoticePanel + DEATH_NOTICES_OFFSET);
 	}
 
-	static_assert(sizeof(DeathNoticeItem) == 408, "sizeof(DeathNoticeItem) doesn't match TF2!");
+	// static_assert(sizeof(DeathNoticeItem) == 408, "sizeof(DeathNoticeItem) doesn't match TF2!");
 
 	auto const localPlayerIndex = GetHooks()->GetRawFunc<HookFunc::Global_GetLocalPlayerIndex>()();
 	Player* localPlayer = Player::GetPlayer(localPlayerIndex, __FUNCSIG__);

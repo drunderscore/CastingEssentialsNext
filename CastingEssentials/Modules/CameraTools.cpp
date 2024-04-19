@@ -121,16 +121,6 @@ bool CameraTools::CheckDependencies()
 
 	try
 	{
-		GetHooks()->GetRawFunc<HookFunc::C_HLTVCamera_SetCameraAngle>();
-	}
-	catch (bad_pointer)
-	{
-		PluginWarning("Required function C_HLTVCamera::SetCameraAngle for module %s not available!\n", GetModuleName());
-		ready = false;
-	}
-
-	try
-	{
 		GetHooks()->GetRawFunc<HookFunc::C_HLTVCamera_SetMode>();
 	}
 	catch (bad_pointer)
@@ -658,7 +648,9 @@ bool CameraTools::FixViewHeights()
 	// We can sometimes end up reading m_vecViewOffset[2] before the entity
 	// has had a chance to update its interpolated vars. Force the interpolation
 	// now.
-	auto& viewOffsetVar = basePlayer->m_iv_vecViewOffset;
+	// auto& viewOffsetVar = basePlayer->m_iv_vecViewOffset;
+	// HACK: We haven't made the client stuff 64-bit friendly yet, offsets are bad. Avoid using them for now.
+	auto& viewOffsetVar = *reinterpret_cast<CInterpolatedVar<Vector>*>(reinterpret_cast<uintptr_t>(basePlayer) + 0x1698);
 	viewOffsetVar.Interpolate(Interfaces::GetEngineTool()->ClientTime());
 
 	const Vector viewOffset(0, 0, s_ViewOffsetZOffset.GetValue(ent));

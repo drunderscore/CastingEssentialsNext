@@ -77,6 +77,7 @@ void CastingPlugin::PrintLicence()
 		R"LICENSE(BSD 2-Clause License
 
 Copyright (c) 2018, PazerOP
+Copyright (c) 2024, Dr. Underscore
 Portions copyright (c) fwdcp
 All rights reserved.
 

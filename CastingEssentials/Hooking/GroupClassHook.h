@@ -40,7 +40,7 @@ namespace Hooking
 
 		static Internal::LocalDetourFnPtr<Type, RetVal, Args...> LocalDetourFn()
 		{
-			return [](Type* pThis, void*, Args... args)
+			return [](Type* pThis, Args... args)
 			{
 				Assert(This()->GetInstance() == pThis);
 				return HookFunctionsInvoker<RetVal>::Invoke(args...);

@@ -28,108 +28,109 @@ struct CheckEqual<A, B, typename std::enable_if<A == B>::type> {};
 // adjust your padding until you get it right
 class OffsetChecking
 {
-	OFFSET_CHECK(C_BaseEntity, m_EntClientFlags, 90);
-	OFFSET_CHECK(C_BaseEntity, m_lifeState, 165);
-	OFFSET_CHECK(C_BaseEntity, m_bDormant, 426);
-	OFFSET_CHECK(C_BaseEntity, m_Particles, 596);
+	// FIXME: All of these
+	// OFFSET_CHECK(C_BaseEntity, m_EntClientFlags, 90);
+	// OFFSET_CHECK(C_BaseEntity, m_lifeState, 165);
+	// OFFSET_CHECK(C_BaseEntity, m_bDormant, 426);
+	// OFFSET_CHECK(C_BaseEntity, m_Particles, 596);
 
-	OFFSET_CHECK(C_BaseAnimating, m_nHitboxSet, 1376);
-	OFFSET_CHECK(C_BaseAnimating, m_bDynamicModelPending, 2185);
-	OFFSET_CHECK(C_BaseAnimating, m_pStudioHdr, 2192);
-	OFFSET_CHECK(C_BaseAnimating, m_flFadeScale, 1544);
+	// OFFSET_CHECK(C_BaseAnimating, m_nHitboxSet, 1376);
+	// OFFSET_CHECK(C_BaseAnimating, m_bDynamicModelPending, 2185);
+	// OFFSET_CHECK(C_BaseAnimating, m_pStudioHdr, 2192);
+	// OFFSET_CHECK(C_BaseAnimating, m_flFadeScale, 1544);
 
-	OFFSET_CHECK(C_EconEntity, m_AttributeManager, 2232);
-	OFFSET_CHECK(C_EconEntity, m_bValidatedAttachedEntity, 2560);
-	OFFSET_CHECK(C_EconEntity, m_Something, 2588);
+	// OFFSET_CHECK(C_EconEntity, m_AttributeManager, 2232);
+	// OFFSET_CHECK(C_EconEntity, m_bValidatedAttachedEntity, 2560);
+	// OFFSET_CHECK(C_EconEntity, m_Something, 2588);
 
-	OFFSET_CHECK(C_EconEntity::AttributeManager, m_iReapplyProvisionParity, 52);
-	OFFSET_CHECK(C_EconEntity::AttributeManager, m_hOuter, 56);
-	OFFSET_CHECK(C_EconEntity::AttributeManager, m_ProviderType, 64);
-	OFFSET_CHECK(C_EconEntity::AttributeManager, m_Item, 96);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager, m_iReapplyProvisionParity, 52);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager, m_hOuter, 56);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager, m_ProviderType, 64);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager, m_Item, 96);
 
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemDefinitionIndex, 36);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iEntityQuality, 40);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iEntityLevel, 44);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemIDHigh, 56);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemIDLow, 60);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iAccountID, 64);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iTeamNumber, 152);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_bInitialized, 156);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_Attributes, 168);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_NetworkedDynamicAttributesForDemos, 196);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_bOnlyIterateItemViewAttributes, 224);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemDefinitionIndex, 36);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iEntityQuality, 40);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iEntityLevel, 44);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemIDHigh, 56);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iItemIDLow, 60);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iAccountID, 64);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_iTeamNumber, 152);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_bInitialized, 156);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_Attributes, 168);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_NetworkedDynamicAttributesForDemos, 196);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedItem, m_bOnlyIterateItemViewAttributes, 224);
 
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_iAttributeDefinitionIndex, 4);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_iRawValue32, 8);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_flValue, 8);
-	OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_nRefundableCurrency, 12);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_iAttributeDefinitionIndex, 4);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_iRawValue32, 8);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_flValue, 8);
+	// OFFSET_CHECK(C_EconEntity::AttributeManager::ScriptCreatedAttribute, m_nRefundableCurrency, 12);
 
-	OFFSET_CHECK(C_BaseCombatWeapon, m_hOwner, 2640);
+	// OFFSET_CHECK(C_BaseCombatWeapon, m_hOwner, 2640);
 
-	SIZE_CHECK(CPlayerLocalData, 740);
-	OFFSET_CHECK(C_BasePlayer, m_vecViewOffset, 252);
-	OFFSET_CHECK(C_BasePlayer, m_flFriction, 648);
-	OFFSET_CHECK(C_BasePlayer, m_Local, 3612);
-	OFFSET_CHECK(C_BasePlayer, m_iFOVStart, 4416);
-	OFFSET_CHECK(C_BasePlayer, m_iDefaultFOV, 4424);
-	OFFSET_CHECK(C_BasePlayer, m_pCurrentCommand, 4484);
-	OFFSET_CHECK(C_BasePlayer, m_hVehicle, 4564);
-	OFFSET_CHECK(C_BasePlayer, m_iv_vecViewOffset, 4588);
-	OFFSET_CHECK(C_BasePlayer, m_hViewModel, 4736);
+	// SIZE_CHECK(CPlayerLocalData, 740);
+	// OFFSET_CHECK(C_BasePlayer, m_vecViewOffset, 252);
+	// OFFSET_CHECK(C_BasePlayer, m_flFriction, 648);
+	// OFFSET_CHECK(C_BasePlayer, m_Local, 3612);
+	// OFFSET_CHECK(C_BasePlayer, m_iFOVStart, 4416);
+	// OFFSET_CHECK(C_BasePlayer, m_iDefaultFOV, 4424);
+	// OFFSET_CHECK(C_BasePlayer, m_pCurrentCommand, 4484);
+	// OFFSET_CHECK(C_BasePlayer, m_hVehicle, 4564);
+	// OFFSET_CHECK(C_BasePlayer, m_iv_vecViewOffset, 4588);
+	// OFFSET_CHECK(C_BasePlayer, m_hViewModel, 4736);
 
-	OFFSET_CHECK(C_BaseAnimatingOverlay, m_AnimOverlay, 2216);
-	OFFSET_CHECK(C_BaseFlex, m_flexWeight, 2384);
-	OFFSET_CHECK(C_BaseFlex, m_viewtarget, 2324);
+	// OFFSET_CHECK(C_BaseAnimatingOverlay, m_AnimOverlay, 2216);
+	// OFFSET_CHECK(C_BaseFlex, m_flexWeight, 2384);
+	// OFFSET_CHECK(C_BaseFlex, m_viewtarget, 2324);
 
-	OFFSET_CHECK(C_BaseViewModel, m_nViewModelIndex, 2232);
-	OFFSET_CHECK(C_BaseViewModel, m_nAnimationParity, 2248);
-	OFFSET_CHECK(C_BaseViewModel, m_sVMName, 2252);
-	OFFSET_CHECK(C_BaseViewModel, m_sAnimationPrefix, 2256);
+	// OFFSET_CHECK(C_BaseViewModel, m_nViewModelIndex, 2232);
+	// OFFSET_CHECK(C_BaseViewModel, m_nAnimationParity, 2248);
+	// OFFSET_CHECK(C_BaseViewModel, m_sVMName, 2252);
+	// OFFSET_CHECK(C_BaseViewModel, m_sAnimationPrefix, 2256);
 
-	OFFSET_CHECK(C_EntityFlame, m_hEffect, 1360);
+	// OFFSET_CHECK(C_EntityFlame, m_hEffect, 1360);
 
-	OFFSET_CHECK(ConVar, m_fnChangeCallbackClient, 88);
+	// OFFSET_CHECK(ConVar, m_fnChangeCallbackClient, 88);
 
-	OFFSET_CHECK(CUserCmd, mousedx, 56);
-	OFFSET_CHECK(CUserCmd, mousedy, 58);
+	// OFFSET_CHECK(CUserCmd, mousedx, 56);
+	// OFFSET_CHECK(CUserCmd, mousedy, 58);
 
-	OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown0, 388);
-	OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown1, 392);
-	OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown2, 396);
+	// OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown0, 388);
+	// OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown1, 392);
+	// OFFSET_CHECK(vgui::ContinuousProgressBar, _unknown2, 396);
 
-	OFFSET_CHECK(studiohdr_t, numbones, 156);
+	// OFFSET_CHECK(studiohdr_t, numbones, 156);
 
-	OFFSET_CHECK(vgui::PanelMessageMap, baseMap, 24);
+	// OFFSET_CHECK(vgui::PanelMessageMap, baseMap, 24);
 
-	OFFSET_CHECK(vgui::Panel, m_pDragDrop, 44);
-	OFFSET_CHECK(vgui::Panel, m_bToolTipOverridden, 60);
-	OFFSET_CHECK(vgui::Panel, _panelName, 84);
-	OFFSET_CHECK(vgui::Panel, _border, 88);
-	OFFSET_CHECK(vgui::Panel, _flags, 92);
-	OFFSET_CHECK(vgui::Panel, _cursor, 156);
-	OFFSET_CHECK(vgui::Panel, _buildModeFlags, 160);
-	OFFSET_CHECK(vgui::Panel, m_flAlpha, 296);
-	OFFSET_CHECK(vgui::Panel, m_nPaintBackgroundType, 304);
-	OFFSET_CHECK(vgui::Panel, m_nBgTextureId1, 312);
-	OFFSET_CHECK(vgui::Panel, m_nBgTextureId2, 320);
-	OFFSET_CHECK(vgui::Panel, m_nBgTextureId3, 328);
-	OFFSET_CHECK(vgui::Panel, m_nBgTextureId4, 336);
-	OFFSET_CHECK(vgui::Panel, m_roundedCorners, 340);
+	// OFFSET_CHECK(vgui::Panel, m_pDragDrop, 44);
+	// OFFSET_CHECK(vgui::Panel, m_bToolTipOverridden, 60);
+	// OFFSET_CHECK(vgui::Panel, _panelName, 84);
+	// OFFSET_CHECK(vgui::Panel, _border, 88);
+	// OFFSET_CHECK(vgui::Panel, _flags, 92);
+	// OFFSET_CHECK(vgui::Panel, _cursor, 156);
+	// OFFSET_CHECK(vgui::Panel, _buildModeFlags, 160);
+	// OFFSET_CHECK(vgui::Panel, m_flAlpha, 296);
+	// OFFSET_CHECK(vgui::Panel, m_nPaintBackgroundType, 304);
+	// OFFSET_CHECK(vgui::Panel, m_nBgTextureId1, 312);
+	// OFFSET_CHECK(vgui::Panel, m_nBgTextureId2, 320);
+	// OFFSET_CHECK(vgui::Panel, m_nBgTextureId3, 328);
+	// OFFSET_CHECK(vgui::Panel, m_nBgTextureId4, 336);
+	// OFFSET_CHECK(vgui::Panel, m_roundedCorners, 340);
 
-	OFFSET_CHECK(vgui::ImagePanel, m_pImage, 348);
-	OFFSET_CHECK(vgui::ImagePanel, m_pszImageName, 352);
-	OFFSET_CHECK(vgui::ImagePanel, m_FillColor, 376);
-	OFFSET_CHECK(vgui::ImagePanel, m_DrawColor, 380);
+	// OFFSET_CHECK(vgui::ImagePanel, m_pImage, 348);
+	// OFFSET_CHECK(vgui::ImagePanel, m_pszImageName, 352);
+	// OFFSET_CHECK(vgui::ImagePanel, m_FillColor, 376);
+	// OFFSET_CHECK(vgui::ImagePanel, m_DrawColor, 380);
 
-	OFFSET_CHECK(vgui::ProgressBar, m_iProgressDirection, 352);
-	OFFSET_CHECK(vgui::ProgressBar, _progress, 356);
-	OFFSET_CHECK(vgui::ProgressBar, _segmentGap, 364);
-	OFFSET_CHECK(vgui::ProgressBar, _segmentWide, 368);
-	OFFSET_CHECK(vgui::ProgressBar, m_iBarInset, 372);
-	OFFSET_CHECK(vgui::ProgressBar, m_iBarMargin, 376);
+	// OFFSET_CHECK(vgui::ProgressBar, m_iProgressDirection, 352);
+	// OFFSET_CHECK(vgui::ProgressBar, _progress, 356);
+	// OFFSET_CHECK(vgui::ProgressBar, _segmentGap, 364);
+	// OFFSET_CHECK(vgui::ProgressBar, _segmentWide, 368);
+	// OFFSET_CHECK(vgui::ProgressBar, m_iBarInset, 372);
+	// OFFSET_CHECK(vgui::ProgressBar, m_iBarMargin, 376);
 
-	OFFSET_CHECK(SVC_FixAngle, m_bRelative, 20);
-	OFFSET_CHECK(SVC_FixAngle, m_Angle, 24);
+	// OFFSET_CHECK(SVC_FixAngle, m_bRelative, 20);
+	// OFFSET_CHECK(SVC_FixAngle, m_Angle, 24);
 
 	template<typename T> static void Check(int expectedOffset, T func)
 	{

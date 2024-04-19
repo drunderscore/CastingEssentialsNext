@@ -44,14 +44,6 @@ static int ActivityToSequence(CStudioHdr* pStudioHdr, Activity activity)
 	return -1;
 }
 
-static Activity SequenceToActivity(CStudioHdr* pStudioHdr, int nSequence)
-{
-	if (!pStudioHdr)
-		return ACT_INVALID;
-
-	return (Activity)pStudioHdr->pSeqdesc(nSequence).activity;
-}
-
 static bool ShouldDisableActivity(Activity inputAct)
 {
 	static_assert(ACT_ITEM1_VM_INSPECT_START == 1908);
@@ -138,7 +130,7 @@ void WeaponTools::RecvProxy_SequenceNum_Override(const CRecvProxyData *pData, vo
 
 		CRecvProxyData newData = *pData;
 
-		const auto inputAct = SequenceToActivity(pStudioHdr, pData->m_Value.m_Int);
+		const auto inputAct = model->GetSequenceActivity(pData->m_Value.m_Int);
 		UpdateVMIdleActivity(model, inputAct);
 
 		if (ShouldDisableActivity(inputAct))

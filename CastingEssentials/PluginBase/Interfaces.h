@@ -147,5 +147,5 @@ private:
 	static bool vguiLibrariesAvailable;
 
 	static IClientMode* s_ClientMode;
-	static C_HLTVCamera** s_HLTVCamera;
+	static C_HLTVCamera* s_HLTVCamera;
 };

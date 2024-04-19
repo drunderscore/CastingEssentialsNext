@@ -1,10 +1,8 @@
-[submodule "sdk2013"]
-	path = sdk2013
-	url = https://github.com/PazerOP/source-sdk-2013.git
-	branch = master
 [submodule "polyhook"]
 	path = polyhook
-url=https://github.com/PazerOP/PolyHook
+	url = https://github.com/drunderscore/PolyHook.git
 	branch = master
-[submodule "sdk2013/"]
-	url = https://github.com/dalegaard/source-sdk-2013.git
+[submodule "sdk2013"]
+	path = sdk2013
+	url = https://github.com/drunderscore/source-sdk-2013.git
+	branch = next

@@ -14,7 +14,7 @@ enum class TFResistType;
 
 namespace vgui
 {
-	typedef unsigned int VPANEL;
+	typedef uintptr_t VPANEL;
 	class AnimationController;
 	class Panel;
 	class EditablePanel;

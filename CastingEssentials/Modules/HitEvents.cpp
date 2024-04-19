@@ -33,8 +33,6 @@ HitEvents::HitEvents() :
 	m_LastDamageAccount = nullptr;
 }
 
-#pragma pack( 1 )
-
 class CAccountPanel : public vgui::EditablePanel
 {
 public:
@@ -42,37 +40,39 @@ public:
 
 	struct Event
 	{
-		int m_HealthDelta;			// 0
+		enum eAccountDeltaType_t
+		{
+			ACCOUNT_DELTA_INVALID,
+			ACCOUNT_DELTA_HEALING,
+			ACCOUNT_DELTA_DAMAGE,
+			ACCOUNT_DELTA_BONUS_POINTS,
+			ACCOUNT_DELTA_ROBOT_DESTRUCTION_POINT_RED,
+			ACCOUNT_DELTA_ROBOT_DESTRUCTION_POINT_BLUE,
+		};
 
-		bool m_BigFont;				// 4
+		// amount of delta
+		int m_iAmount;
 
-		PADDING(3);
+		bool m_bLargeFont;		// display larger font
+		eAccountDeltaType_t m_eDataType;
 
-		int deltaType;				// 8
+		// die time
+		float m_flDieTime;
 
-		float m_EndTime;			// 12
+		// position
+		int m_nX;				// X Pos in screen space & world space
+		int m_nXEnd;			// Ending X Pos in screen space and world space
+		int m_nHStart;			// Starting Y Pos in screen space, Z pos in world space
+		int m_nHEnd;			// Ending Y Pos in screen space, Z pos in world space
+		int m_nY;				// Y Coord in world space, not used in screen space
+		bool m_bWorldSpace;
+		float m_flBatchWindow;
+		int m_nSourceID;		// Can be entindex, etc
+		Color m_color;
+		bool m_bShadows;
 
-		int m_StartX;				// 16
-		int m_EndX;					// 20
-		int m_StartY;				// 24
-		int m_EndY;					// 28
-
-		int _unknown32;				// 32
-
-		bool _unknown36;			// 36
-
-		uint16_t : 16;
-		uint8_t : 8;
-		float m_BatchingWindow;		// 40
-		int _unknown44;				// 44
-
-		Color m_TextColor;			// 48
-
-		bool _unknown52;			// 52
-
-		uint8_t : 8;
-
-		wchar_t _unknown54[9];		// 54
+		// append a bit of extra text to the end
+		wchar_t m_wzText[8];
 	};
 
 private:
@@ -80,92 +80,42 @@ private:
 
 	static_assert(EVENT_SIZE == 72);
 
-	static constexpr auto test = offsetof(Event, m_EndTime);
-	static_assert(offsetof(Event, m_BigFont) == 4);
-	static_assert(offsetof(Event, deltaType) == 8);
-	static_assert(offsetof(Event, m_EndTime) == 12);
-	static_assert(offsetof(Event, _unknown32) == 32);
-	static_assert(offsetof(Event, _unknown36) == 36);
-	static_assert(offsetof(Event, m_BatchingWindow) == 40);
-	static_assert(offsetof(Event, m_TextColor) == 48);
-	static_assert(offsetof(Event, _unknown52) == 52);
-	static_assert(offsetof(Event, _unknown54) == 54);
+	static constexpr auto test = offsetof(Event, m_flDieTime);
+	static_assert(offsetof(Event, m_bLargeFont) == 4);
+	static_assert(offsetof(Event, m_eDataType) == 8);
+	static_assert(offsetof(Event, m_flDieTime) == 12);
+	static_assert(offsetof(Event, m_flBatchWindow) == 40);
+	static_assert(offsetof(Event, m_color) == 48);
 
 public:
-
-	uint32_t : 32;
+	void* some_vtable;
 	CUtlVector<Event> m_Events;
-	//Event* m_Events;
 
-	//uint64_t : 64;
-	//int m_EventCount;					// 412
-	//CUtlVector<Event> m_Events;
+	int m_nBGTexture;
+	bool m_bNegativeFlipDir;
 
-	PADDING(8);
-	float m_flDeltaItemStartPos;		// 428
-	uint32_t : 32;
-	float m_flDeltaItemEndPos;			// 436
+	float m_flDeltaItemStartPos;
+	float m_flDeltaItemEndPos;
 
-	uint32_t : 32;
-	float m_flDeltaItemX;				// 444
-	uint32_t : 32;
-	float m_flDeltaItemXEndPos;			// 452
+	float m_flDeltaItemX;
+	float m_flDeltaItemXEndPos;
 
-	uint32_t : 32;
-	float m_flBGImageX;					// 460
-	uint32_t : 32;
-	float m_flBGImageY;					// 468
-	uint32_t : 32;
-	float m_flBGImageWide;				// 476
-	uint32_t : 32;
-	float m_flBGImageTall;				// 484
+	float m_flBGImageX;
+	float m_flBGImageY;
+	float m_flBGImageWide;
+	float m_flBGImageTall;
 
-	uint8_t : 8;
-	Color m_DeltaPositiveColor;			// 489
-	uint8_t : 8;
-	Color m_DeltaNegativeColor;			// 494
-	uint8_t : 8;
-	Color m_DeltaEventColor;			// 499
-	uint8_t : 8;
-	Color m_DeltaRedRobotScoreColor;	// 504
-	uint8_t : 8;
-	Color m_DeltaBlueRobotScoreColor;	// 509
+	Color m_DeltaPositiveColor;
+	Color m_DeltaNegativeColor;
+	Color m_DeltaEventColor;
+	Color m_DeltaRedRobotScoreColor;
+	Color m_DeltaBlueRobotScoreColor;
 
-	uint16_t : 16;
-	uint8_t : 8;
+	float m_flDeltaLifetime;
 
-	float m_flDeltaLifetime;			// 516
-
-	uint32_t : 32;
-	vgui::HFont m_hDeltaItemFont;		// 524
-	uint32_t : 32;
-	vgui::HFont m_hDeltaItemFontBig;	// 532
+	vgui::HFont m_hDeltaItemFont;
+	vgui::HFont m_hDeltaItemFontBig;
 };
-
-static_assert(offsetof(CAccountPanel, m_Events) == 400);
-//static_assert(offsetof(CAccountPanel, m_EventCount) == 412);
-
-static_assert(offsetof(CAccountPanel, m_flDeltaItemStartPos) == 428);
-static_assert(offsetof(CAccountPanel, m_flDeltaItemEndPos) == 436);
-
-static_assert(offsetof(CAccountPanel, m_flDeltaItemX) == 444);
-static_assert(offsetof(CAccountPanel, m_flDeltaItemXEndPos) == 452);
-
-static_assert(offsetof(CAccountPanel, m_flBGImageX) == 460);
-static_assert(offsetof(CAccountPanel, m_flBGImageY) == 468);
-static_assert(offsetof(CAccountPanel, m_flBGImageWide) == 476);
-static_assert(offsetof(CAccountPanel, m_flBGImageTall) == 484);
-
-static_assert(offsetof(CAccountPanel, m_DeltaPositiveColor) == 489);
-static_assert(offsetof(CAccountPanel, m_DeltaNegativeColor) == 494);
-static_assert(offsetof(CAccountPanel, m_DeltaEventColor) == 499);
-static_assert(offsetof(CAccountPanel, m_DeltaRedRobotScoreColor) == 504);
-static_assert(offsetof(CAccountPanel, m_DeltaBlueRobotScoreColor) == 509);
-
-static_assert(offsetof(CAccountPanel, m_flDeltaLifetime) == 516);
-
-static_assert(offsetof(CAccountPanel, m_hDeltaItemFont) == 524);
-static_assert(offsetof(CAccountPanel, m_hDeltaItemFontBig) == 532);
 
 class CDamageAccountPanel : public CAccountPanel
 {
@@ -174,8 +124,6 @@ public:
 
 	int garbo;
 };
-
-static_assert(offsetof(CDamageAccountPanel, garbo) > offsetof(CAccountPanel, m_hDeltaItemFontBig));
 
 void HitEvents::LevelInit()
 {
@@ -299,7 +247,7 @@ bool HitEvents::DamageAccountPanelShouldDrawOverride(CDamageAccountPanel* pThis)
 	}
 
 	// Not too sure why this offset is required, maybe i'm just an idiot
-	CDamageAccountPanel* questionable = (CDamageAccountPanel*)((std::byte*)pThis + 44);
+	CDamageAccountPanel* questionable = (CDamageAccountPanel*)((std::byte*)pThis + 72);
 
 	return questionable->m_Events.Count() > 0;
 }
