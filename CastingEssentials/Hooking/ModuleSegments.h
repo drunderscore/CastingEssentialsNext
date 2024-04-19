@@ -4,5 +4,5 @@
 
 namespace Hooking
 {
-	void* GetModuleSection(HMODULE module, const char* sectionName);
+void* GetModuleSection(HMODULE module, const char* sectionName);
 }

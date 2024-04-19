@@ -14,59 +14,60 @@ class C_BaseViewModel;
 
 namespace std
 {
-	template<> struct hash<CBaseHandle>
-	{
-		size_t operator()(const CBaseHandle& handle) const
-		{
-			return handle.GetEntryIndex() & (handle.GetSerialNumber() << NUM_ENT_ENTRY_BITS);
-		}
-	};
+template<>
+struct hash<CBaseHandle>
+{
+    size_t operator()(const CBaseHandle& handle) const
+    {
+        return handle.GetEntryIndex() & (handle.GetSerialNumber() << NUM_ENT_ENTRY_BITS);
+    }
+};
 }
 
 class WeaponTools final : public Module<WeaponTools>
 {
 public:
-	WeaponTools();
+    WeaponTools();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Weapon Tools"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Weapon Tools"; }
 
 protected:
-	void OnTick(bool inGame) override;
-	void LevelShutdown() override;
+    void OnTick(bool inGame) override;
+    void LevelShutdown() override;
 
 private:
-	static float& GetInspectInterp();
+    static float& GetInspectInterp();
 
-	enum class InspectStage
-	{
-		None = -1,
-		PullUp = 0,
-		Hold = 1,
-		PutDown = 2,
-	};
+    enum class InspectStage
+    {
+        None = -1,
+        PullUp = 0,
+        Hold = 1,
+        PutDown = 2,
+    };
 
-	ConVar ce_weapon_inspect_debug;
-	ConVar ce_weapon_inspect_block;
-	ConVar ce_weapon_skin_downsample;
-	//ConCommand ce_weapon_inspect_force;
+    ConVar ce_weapon_inspect_debug;
+    ConVar ce_weapon_inspect_block;
+    ConVar ce_weapon_skin_downsample;
+    // ConCommand ce_weapon_inspect_force;
 
-	std::optional<VariablePusher<RecvVarProxyFn>> m_InspectStageProxyFnOverride;
-	std::optional<VariablePusher<RecvVarProxyFn>> m_ViewModelProxyFnOverride;
-	void RecvProxy_SequenceNum_Override(const CRecvProxyData* data, void* pStruct, void* out);
+    std::optional<VariablePusher<RecvVarProxyFn>> m_InspectStageProxyFnOverride;
+    std::optional<VariablePusher<RecvVarProxyFn>> m_ViewModelProxyFnOverride;
+    void RecvProxy_SequenceNum_Override(const CRecvProxyData* data, void* pStruct, void* out);
 
-	void SkinDownsampleChanged(const ConVar* var);
+    void SkinDownsampleChanged(const ConVar* var);
 
-	void InspectBlockToggled(const ConVar* cv);
+    void InspectBlockToggled(const ConVar* cv);
 
-	struct ViewModel
-	{
-		CHandle<C_BaseViewModel> m_VM;
-		Activity m_LastVMIdleActivity = ACT_INVALID;
-	};
+    struct ViewModel
+    {
+        CHandle<C_BaseViewModel> m_VM;
+        Activity m_LastVMIdleActivity = ACT_INVALID;
+    };
 
-	void UpdateVMIdleActivity(const CHandle<C_BaseViewModel>& vm, Activity newAct);
-	std::unordered_map<CHandle<C_BaseViewModel>, Activity, std::hash<CBaseHandle>> m_ViewModelCache;
+    void UpdateVMIdleActivity(const CHandle<C_BaseViewModel>& vm, Activity newAct);
+    std::unordered_map<CHandle<C_BaseViewModel>, Activity, std::hash<CBaseHandle>> m_ViewModelCache;
 
-	static std::pair<std::byte*, std::byte*> GetSkinDownsampleVars();
+    static std::pair<std::byte*, std::byte*> GetSkinDownsampleVars();
 };

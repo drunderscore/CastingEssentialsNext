@@ -9,22 +9,22 @@
 class LocalPlayer : public Module<LocalPlayer>
 {
 public:
-	LocalPlayer();
+    LocalPlayer();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Local Player"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Local Player"; }
 
 private:
-	void OnTick(bool inGame) override;
+    void OnTick(bool inGame) override;
 
-	int GetLocalPlayerIndexOverride();
+    int GetLocalPlayerIndexOverride();
 
-	Hook<HookFunc::Global_GetLocalPlayerIndex> m_GetLocalPlayerIndexHook;
+    Hook<HookFunc::Global_GetLocalPlayerIndex> m_GetLocalPlayerIndexHook;
 
-	ConVar ce_localplayer_enabled;
-	ConVar ce_localplayer_player;
-	ConCommand ce_localplayer_set_current_target;
-	ConVar ce_localplayer_track_spec_target;
-	void SetToCurrentTarget();
-	void ToggleEnabled(const ConVar *var);
+    ConVar ce_localplayer_enabled;
+    ConVar ce_localplayer_player;
+    ConCommand ce_localplayer_set_current_target;
+    ConVar ce_localplayer_track_spec_target;
+    void SetToCurrentTarget();
+    void ToggleEnabled(const ConVar* var);
 };

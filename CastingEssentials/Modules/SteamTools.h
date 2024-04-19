@@ -7,77 +7,64 @@
 class SteamTools : public Module<SteamTools>
 {
 public:
-	SteamTools();
+    SteamTools();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Steam Tools"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Steam Tools"; }
 
 protected:
-	void OnTick(bool inGame) override;
+    void OnTick(bool inGame) override;
 
 private:
-	ConVar ce_steamtools_rp_legacy;
+    ConVar ce_steamtools_rp_legacy;
 
-	ConVar ce_steamtools_rp_state;
-	ConVar ce_steamtools_rp_matchgroup;
-	ConVar ce_steamtools_rp_currentmap;
+    ConVar ce_steamtools_rp_state;
+    ConVar ce_steamtools_rp_matchgroup;
+    ConVar ce_steamtools_rp_currentmap;
 
-	ConCommand ce_steamtools_rp_debug;
+    ConCommand ce_steamtools_rp_debug;
 
-	enum class RichPresenceState
-	{
-		MainMenu,
-		SearchingGeneric,
-		SearchingMatchGroup,
-		PlayingGeneric,
-		LoadingGeneric,
-		PlayingMatchGroup,
-		LoadingMatchGroup,
-		PlayingCommunity,
-		LoadingCommunity,
+    enum class RichPresenceState
+    {
+        MainMenu,
+        SearchingGeneric,
+        SearchingMatchGroup,
+        PlayingGeneric,
+        LoadingGeneric,
+        PlayingMatchGroup,
+        LoadingMatchGroup,
+        PlayingCommunity,
+        LoadingCommunity,
 
-		COUNT,
-	};
-	static constexpr const char* RICH_PRESENCE_STATES[] =
-	{
-		"MainMenu",
-		"SearchingGeneric",
-		"SearchingMatchGroup",
-		"PlayingGeneric",
-		"LoadingGeneric",
-		"PlayingMatchGroup",
-		"LoadingMatchGroup",
-		"PlayingCommunity",
-		"LoadingCommunity",
-	};
+        COUNT,
+    };
+    static constexpr const char* RICH_PRESENCE_STATES[] = {
+        "MainMenu",          "SearchingGeneric",  "SearchingMatchGroup", "PlayingGeneric",   "LoadingGeneric",
+        "PlayingMatchGroup", "LoadingMatchGroup", "PlayingCommunity",    "LoadingCommunity",
+    };
 
-	enum class MatchGroup
-	{
-		Competitive6v6,
-		Casual,
-		SpecialEvent,
-		MannUp,
-		BootCamp,
+    enum class MatchGroup
+    {
+        Competitive6v6,
+        Casual,
+        SpecialEvent,
+        MannUp,
+        BootCamp,
 
-		COUNT,
-	};
-	static constexpr const char* MATCH_GROUPS[] =
-	{
-		"Competitive6v6",
-		"Casual",
-		"SpecialEvent",
-		"MannUp",
-		"BootCamp",
-	};
+        COUNT,
+    };
+    static constexpr const char* MATCH_GROUPS[] = {
+        "Competitive6v6", "Casual", "SpecialEvent", "MannUp", "BootCamp",
+    };
 
-	static constexpr float RP_UPDATE_INTERVAL = 10;
+    static constexpr float RP_UPDATE_INTERVAL = 10;
 
-	void SetRichPresenceState(ConVar* var, const char* oldValue);
-	void SetMatchGroup(ConVar* var, const char* oldValue);
+    void SetRichPresenceState(ConVar* var, const char* oldValue);
+    void SetMatchGroup(ConVar* var, const char* oldValue);
 
-	void UpdateRichPresence();
+    void UpdateRichPresence();
 
-	float m_LastRPUpdateTime;
+    float m_LastRPUpdateTime;
 
-	static void PrintRichPresence();
+    static void PrintRichPresence();
 };

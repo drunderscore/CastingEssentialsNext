@@ -11,30 +11,30 @@
 class SniperLOS : public Module<SniperLOS>
 {
 public:
-	SniperLOS();
+    SniperLOS();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Sniper LOS Beams"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Sniper LOS Beams"; }
 
 private:
-	static EntityTypeChecker s_SniperRifleType;
+    static EntityTypeChecker s_SniperRifleType;
 
-	class LOSRenderer : public CAutoGameSystemPerFrame
-	{
-	public:
-		const char* Name() override { return "SniperLOSRenderer"; }
+    class LOSRenderer : public CAutoGameSystemPerFrame
+    {
+    public:
+        const char* Name() override { return "SniperLOSRenderer"; }
 
-		void PostRender() override;
-	};
-	std::optional<LOSRenderer> m_LOSRenderer;
+        void PostRender() override;
+    };
+    std::optional<LOSRenderer> m_LOSRenderer;
 
-	void ToggleEnabled(const ConVar* var);
+    void ToggleEnabled(const ConVar* var);
 
-	ConVar ce_sniperlos_enabled;
-	ConVar ce_sniperlos_width;
-	ConVar ce_sniperlos_color_blu;
-	ConVar ce_sniperlos_color_red;
+    ConVar ce_sniperlos_enabled;
+    ConVar ce_sniperlos_width;
+    ConVar ce_sniperlos_color_blu;
+    ConVar ce_sniperlos_color_red;
 
-	Color m_BeamColorBlue;
-	Color m_BeamColorRed;
+    Color m_BeamColorBlue;
+    Color m_BeamColorRed;
 };

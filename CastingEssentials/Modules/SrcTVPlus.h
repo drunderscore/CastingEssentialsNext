@@ -1,8 +1,8 @@
 #pragma once
 #pragma once
 
-#include "PluginBase/Modules.h"
 #include "PluginBase/Entities.h"
+#include "PluginBase/Modules.h"
 #include <map>
 
 class SrcTVPlusListener;
@@ -23,55 +23,62 @@ class CRecvProxyData;
 class SrcTVPlus : public Module<SrcTVPlus>
 {
 public:
-	__forceinline static bool IsAvailable() { return s_Detected; }
-	using Callback = void(bool);
+    __forceinline static bool IsAvailable() { return s_Detected; }
+    using Callback = void(bool);
 
 protected:
+    template<typename F>
+    static int register_listener(F&& cb)
+    {
+        auto id = s_MaxListener++;
+        s_Listeners.emplace(id, std::forward<F>(cb));
+        cb(s_Detected); // Call with current value
+        return id;
+    }
+    static void unregister_listener(int id) { s_Listeners.erase(id); }
+    friend class SrcTVPlusListener;
 
-	template<typename F> static int register_listener(F&& cb) {
-		auto id = s_MaxListener++;
-		s_Listeners.emplace(id, std::forward<F>(cb));
-		cb(s_Detected); // Call with current value
-		return id;
-	}
-	static void unregister_listener(int id) {
-		s_Listeners.erase(id);
-	}
-	friend class SrcTVPlusListener;
-
-// Module implementation
+    // Module implementation
 public:
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "SrcTV+ detection"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "SrcTV+ detection"; }
 
 protected:
-	// When entering/leaving a level we reset the detector
-	virtual void LevelInit() { SetDetected(false, true); EnableDetector(); }
-	virtual void LevelShutdown() { SetDetected(false); DisableDetector(); }
+    // When entering/leaving a level we reset the detector
+    virtual void LevelInit()
+    {
+        SetDetected(false, true);
+        EnableDetector();
+    }
+    virtual void LevelShutdown()
+    {
+        SetDetected(false);
+        DisableDetector();
+    }
 
-	static void EnableDetector();
-	static void DisableDetector();
-	static void DetectorProxy(const CRecvProxyData *pData, void *pStruct, void *pOut);
+    static void EnableDetector();
+    static void DisableDetector();
+    static void DetectorProxy(const CRecvProxyData* pData, void* pStruct, void* pOut);
 
 private:
-	static bool s_Detected;
-	static std::map<int, std::function<Callback>> s_Listeners;
-	static int s_MaxListener;
+    static bool s_Detected;
+    static std::map<int, std::function<Callback>> s_Listeners;
+    static int s_MaxListener;
 
-	static void NotifyListeners();
-	static void SetDetected(bool value, bool force_broadcast = false);
+    static void NotifyListeners();
+    static void SetDetected(bool value, bool force_broadcast = false);
 };
 
 class SrcTVPlusListener
 {
 public:
-	template<typename F> SrcTVPlusListener(F&& cb) {
-		m_ListenerID = SrcTVPlus::register_listener(std::forward<F>(cb));
-	}
-	SrcTVPlusListener() {
-		SrcTVPlus::unregister_listener(m_ListenerID);
-	}
+    template<typename F>
+    SrcTVPlusListener(F&& cb)
+    {
+        m_ListenerID = SrcTVPlus::register_listener(std::forward<F>(cb));
+    }
+    SrcTVPlusListener() { SrcTVPlus::unregister_listener(m_ListenerID); }
 
 private:
-	int m_ListenerID;
+    int m_ListenerID;
 };

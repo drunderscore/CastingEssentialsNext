@@ -17,112 +17,118 @@ class IClientNetworkable;
 class EntityTypeChecker final
 {
 public:
-	EntityTypeChecker() = default;
+    EntityTypeChecker() = default;
 
-	__forceinline bool IsInit() const { return !m_ValidRecvTables.empty(); }
+    __forceinline bool IsInit() const { return !m_ValidRecvTables.empty(); }
 
-	__forceinline bool Match(const IClientNetworkable* ent) const { Assert(ent); return Match(ent->GetClientClass()); }
-	__forceinline bool Match(const ClientClass* cc) const { Assert(cc); return Match(cc->m_pRecvTable); }
-	bool Match(const RecvTable* table) const
-	{
-		Assert(table);
-		const auto& end = m_ValidRecvTables.data() + m_ValidRecvTables.size();
-		for (auto iter = m_ValidRecvTables.data(); iter < end; iter++)
-		{
-			if ((*iter) != table)
-				continue;
+    __forceinline bool Match(const IClientNetworkable* ent) const
+    {
+        Assert(ent);
+        return Match(ent->GetClientClass());
+    }
+    __forceinline bool Match(const ClientClass* cc) const
+    {
+        Assert(cc);
+        return Match(cc->m_pRecvTable);
+    }
+    bool Match(const RecvTable* table) const
+    {
+        Assert(table);
+        const auto& end = m_ValidRecvTables.data() + m_ValidRecvTables.size();
+        for (auto iter = m_ValidRecvTables.data(); iter < end; iter++)
+        {
+            if ((*iter) != table)
+                continue;
 
-			if (iter != m_ValidRecvTables.data())
-				std::swap(*(iter - 1), *iter);    // Move up one
+            if (iter != m_ValidRecvTables.data())
+                std::swap(*(iter - 1), *iter); // Move up one
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
 private:
-	inline EntityTypeChecker(const std::set<const RecvTable*>& validRecvTables) :
-		m_ValidRecvTables(validRecvTables.begin(), validRecvTables.end())
-	{
-	}
+    inline EntityTypeChecker(const std::set<const RecvTable*>& validRecvTables)
+        : m_ValidRecvTables(validRecvTables.begin(), validRecvTables.end())
+    {
+    }
 
-	friend class Entities;
-	mutable std::vector<const RecvTable*> m_ValidRecvTables;
+    friend class Entities;
+    mutable std::vector<const RecvTable*> m_ValidRecvTables;
 };
 
 template<typename TValue>
 class EntityOffset final
 {
 public:
-	inline constexpr EntityOffset() : m_Offset(std::numeric_limits<ptrdiff_t>::min())
-	{
-	}
+    inline constexpr EntityOffset() : m_Offset(std::numeric_limits<ptrdiff_t>::min()) {}
 
-	inline constexpr EntityOffset(EntityTypeChecker&& validRecvTables, ptrdiff_t offset) :
-		m_Offset(offset), m_ValidTypes(std::move(validRecvTables))
-	{
-	}
+    inline constexpr EntityOffset(EntityTypeChecker&& validRecvTables, ptrdiff_t offset)
+        : m_Offset(offset), m_ValidTypes(std::move(validRecvTables))
+    {
+    }
 
-	inline const TValue& GetValue(const IClientNetworkable* entity) const
-	{
-		if (!m_ValidTypes.Match(entity))
-		{
-			const char* clientClass;
-			if (!entity)
-				clientClass = "(null entity)";
-			else if (auto cc = entity->GetClientClass(); !cc)
-				clientClass = "(null ClientClass)";
-			else
-				clientClass = cc->GetName();
+    inline const TValue& GetValue(const IClientNetworkable* entity) const
+    {
+        if (!m_ValidTypes.Match(entity))
+        {
+            const char* clientClass;
+            if (!entity)
+                clientClass = "(null entity)";
+            else if (auto cc = entity->GetClientClass(); !cc)
+                clientClass = "(null ClientClass)";
+            else
+                clientClass = cc->GetName();
 
-			throw mismatching_entity_offset("FIXME", clientClass);
-		}
+            throw mismatching_entity_offset("FIXME", clientClass);
+        }
 
-		return *(TValue*)(((std::byte*)entity->GetDataTableBasePtr()) + m_Offset);
-	}
-	__forceinline TValue& GetValue(IClientNetworkable* entity) const
-	{
-		return const_cast<TValue&>(GetValue((const IClientNetworkable*)entity));
-	}
+        return *(TValue*)(((std::byte*)entity->GetDataTableBasePtr()) + m_Offset);
+    }
+    __forceinline TValue& GetValue(IClientNetworkable* entity) const
+    {
+        return const_cast<TValue&>(GetValue((const IClientNetworkable*)entity));
+    }
 
-	inline const TValue* TryGetValue(const IClientNetworkable* entity) const
-	{
-		if (!entity || !m_ValidTypes.Match(entity))
-			return nullptr;
+    inline const TValue* TryGetValue(const IClientNetworkable* entity) const
+    {
+        if (!entity || !m_ValidTypes.Match(entity))
+            return nullptr;
 
-		return (TValue*)(((std::byte*)entity->GetDataTableBasePtr()) + m_Offset);
-	}
-	__forceinline TValue* TryGetValue(IClientNetworkable* entity) const
-	{
-		return const_cast<TValue*>(TryGetValue((const IClientNetworkable*)entity));
-	}
-	inline const TValue& TryGetValue(const IClientNetworkable* entity, const TValue& defaultVal) const
-	{
-		if (auto val = TryGetValue(entity))
-			return *val;
-		else
-			return defaultVal;
-	}
-	inline TValue& TryGetValue(IClientNetworkable* entity, TValue& defaultVal) const
-	{
-		if (auto val = TryGetValue(entity))
-			return *val;
-		else
-			return defaultVal;
-	}
+        return (TValue*)(((std::byte*)entity->GetDataTableBasePtr()) + m_Offset);
+    }
+    __forceinline TValue* TryGetValue(IClientNetworkable* entity) const
+    {
+        return const_cast<TValue*>(TryGetValue((const IClientNetworkable*)entity));
+    }
+    inline const TValue& TryGetValue(const IClientNetworkable* entity, const TValue& defaultVal) const
+    {
+        if (auto val = TryGetValue(entity))
+            return *val;
+        else
+            return defaultVal;
+    }
+    inline TValue& TryGetValue(IClientNetworkable* entity, TValue& defaultVal) const
+    {
+        if (auto val = TryGetValue(entity))
+            return *val;
+        else
+            return defaultVal;
+    }
 
-	__forceinline ptrdiff_t GetOffset(const IClientNetworkable* entity) const
-	{
-		if (!m_ValidTypes.Match(entity))
-			throw mismatching_entity_offset("FIXME", "FIXME2");
+    __forceinline ptrdiff_t GetOffset(const IClientNetworkable* entity) const
+    {
+        if (!m_ValidTypes.Match(entity))
+            throw mismatching_entity_offset("FIXME", "FIXME2");
 
-		return m_Offset;
-	}
+        return m_Offset;
+    }
 
-	__forceinline bool IsInit() const { return m_ValidTypes.IsInit(); }
+    __forceinline bool IsInit() const { return m_ValidTypes.IsInit(); }
 
 private:
-	ptrdiff_t m_Offset;
-	EntityTypeChecker m_ValidTypes;
+    ptrdiff_t m_Offset;
+    EntityTypeChecker m_ValidTypes;
 };

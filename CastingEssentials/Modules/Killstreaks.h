@@ -15,36 +15,36 @@ class C_BaseEntity;
 class Killstreaks : public Module<Killstreaks>
 {
 public:
-	Killstreaks();
+    Killstreaks();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Killstreaks"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Killstreaks"; }
 
 protected:
-	void OnTick(bool inGame) override;
+    void OnTick(bool inGame) override;
 
 private:
-	ConVar ce_killstreaks_enabled;
-	ConVar ce_killstreaks_debug;
-	void UpdateKillstreaks(bool inGame);
+    ConVar ce_killstreaks_enabled;
+    ConVar ce_killstreaks_debug;
+    void UpdateKillstreaks(bool inGame);
 
-	ConVar ce_killstreaks_hide_firstperson_effects;
-	void HideFirstPersonEffects() const;
+    ConVar ce_killstreaks_hide_firstperson_effects;
+    void HideFirstPersonEffects() const;
 
-	bool FireEventClientSideOverride(IGameEventManager2* pThis, IGameEvent *event);
-	void RequestPriceSheetOverride(CStorePanel*);
+    bool FireEventClientSideOverride(IGameEventManager2* pThis, IGameEvent* event);
+    void RequestPriceSheetOverride(CStorePanel*);
 
-	int m_BluTopKillstreak;
-	int m_BluTopKillstreakPlayer;
-	int m_RedTopKillstreak;
-	int m_RedTopKillstreakPlayer;
+    int m_BluTopKillstreak;
+    int m_BluTopKillstreakPlayer;
+    int m_RedTopKillstreak;
+    int m_RedTopKillstreakPlayer;
 
-	std::map<int, int> m_CurrentKillstreaks;
-	Hook<HookFunc::IGameEventManager2_FireEventClientSide> m_FireEventClientSideHook;
-	Hook<HookFunc::CStorePanel_RequestPricesheet> m_RequestPriceSheetHook;
+    std::map<int, int> m_CurrentKillstreaks;
+    Hook<HookFunc::IGameEventManager2_FireEventClientSide> m_FireEventClientSideHook;
+    Hook<HookFunc::CStorePanel_RequestPricesheet> m_RequestPriceSheetHook;
 
-	static std::array<EntityOffset<int>, 4> s_PlayerStreaks;
-	static EntityOffset<bool> s_MedigunHealing;
-	static EntityOffset<CHandle<C_BaseEntity>> s_MedigunHealingTarget;
-	static EntityTypeChecker s_MedigunType;
+    static std::array<EntityOffset<int>, 4> s_PlayerStreaks;
+    static EntityOffset<bool> s_MedigunHealing;
+    static EntityOffset<CHandle<C_BaseEntity>> s_MedigunHealingTarget;
+    static EntityTypeChecker s_MedigunType;
 };

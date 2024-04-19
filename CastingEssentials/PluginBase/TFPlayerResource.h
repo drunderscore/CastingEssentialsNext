@@ -3,8 +3,8 @@
 #include "PluginBase/EntityOffset.h"
 
 #include <array>
-#include <memory>
 #include <ehandle.h>
+#include <memory>
 #include <vector>
 
 #include <ehandle.h>
@@ -15,27 +15,27 @@ class Player;
 
 class TFPlayerResource final
 {
-	TFPlayerResource();
+    TFPlayerResource();
 
 public:
-	~TFPlayerResource() = default;
-	static std::shared_ptr<TFPlayerResource> GetPlayerResource();
+    ~TFPlayerResource() = default;
+    static std::shared_ptr<TFPlayerResource> GetPlayerResource();
 
-	int GetMaxHealth(int playerEntIndex);
-	bool IsAlive(int playerEntIndex);
-	int* GetKillstreak(int playerEntIndex, uint_fast8_t weapon);
-	int GetDamage(int playerEntIndex);
+    int GetMaxHealth(int playerEntIndex);
+    bool IsAlive(int playerEntIndex);
+    int* GetKillstreak(int playerEntIndex, uint_fast8_t weapon);
+    int GetDamage(int playerEntIndex);
 
-	static constexpr auto STREAK_WEAPONS = 4;
+    static constexpr auto STREAK_WEAPONS = 4;
 
 private:
-	bool CheckEntIndex(int playerEntIndex, const char* functionName);
+    bool CheckEntIndex(int playerEntIndex, const char* functionName);
 
-	CHandle<C_BaseEntity> m_PlayerResourceEntity;
-	static std::shared_ptr<TFPlayerResource> m_PlayerResource;
+    CHandle<C_BaseEntity> m_PlayerResourceEntity;
+    static std::shared_ptr<TFPlayerResource> m_PlayerResource;
 
-	std::array<EntityOffset<bool>, MAX_PLAYERS> m_AliveOffsets;
-	EntityOffset<int> m_StreakOffsets[MAX_PLAYERS][STREAK_WEAPONS];
-	std::array<EntityOffset<int>, MAX_PLAYERS> m_DamageOffsets;
-	std::array<EntityOffset<int>, MAX_PLAYERS> m_MaxHealthOffsets;
+    std::array<EntityOffset<bool>, MAX_PLAYERS> m_AliveOffsets;
+    EntityOffset<int> m_StreakOffsets[MAX_PLAYERS][STREAK_WEAPONS];
+    std::array<EntityOffset<int>, MAX_PLAYERS> m_DamageOffsets;
+    std::array<EntityOffset<int>, MAX_PLAYERS> m_MaxHealthOffsets;
 };

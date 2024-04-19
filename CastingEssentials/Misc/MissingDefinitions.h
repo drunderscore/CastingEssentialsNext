@@ -3,8 +3,8 @@
 class SVC_FixAngle
 {
 public:
-	PADDING(20);
+    PADDING(20);
 
-	bool m_bRelative;
-	QAngle m_Angle;
+    bool m_bRelative;
+    QAngle m_Angle;
 };

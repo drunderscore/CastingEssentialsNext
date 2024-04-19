@@ -7,15 +7,15 @@
 class ClientTools : public Module<ClientTools>
 {
 public:
-	ClientTools();
+    ClientTools();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Client Tools"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Client Tools"; }
 
 private:
-	void UpdateWindowTitle(const char* oldval);
+    void UpdateWindowTitle(const char* oldval);
 
-	ConVar ce_clienttools_windowtitle;
+    ConVar ce_clienttools_windowtitle;
 
-	std::string m_OriginalTitle;
+    std::string m_OriginalTitle;
 };

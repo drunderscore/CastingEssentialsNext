@@ -12,47 +12,47 @@ enum class TFTeam;
 
 namespace vgui
 {
-	typedef uintptr_t VPANEL;
-	class EditablePanel;
+typedef uintptr_t VPANEL;
+class EditablePanel;
 }
 
 class MedigunInfo : public Module<MedigunInfo>
 {
 public:
-	MedigunInfo();
+    MedigunInfo();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Medigun Info"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Medigun Info"; }
 
 protected:
-	void LevelShutdown() override;
+    void LevelShutdown() override;
 
 private:
-	struct Data
-	{
-		bool m_Alive;
-		float m_Charge;
-		TFMedigun m_Type;
-		bool m_Popped;
-		TFResistType m_ResistType;
-		TFTeam m_Team;
-	};
+    struct Data
+    {
+        bool m_Alive;
+        float m_Charge;
+        TFMedigun m_Type;
+        bool m_Popped;
+        TFResistType m_ResistType;
+        TFTeam m_Team;
+    };
 
-	void CollectMedigunData();
-	std::map<int, Data> m_MedigunPanelData;
+    void CollectMedigunData();
+    std::map<int, Data> m_MedigunPanelData;
 
-	class MainPanel;
-	std::unique_ptr<MainPanel> m_MainPanel;
-	class MedigunPanel;
+    class MainPanel;
+    std::unique_ptr<MainPanel> m_MainPanel;
+    class MedigunPanel;
 
-	void OnTick(bool inGame) override;
+    void OnTick(bool inGame) override;
 
-	ConVar ce_mediguninfo_separate_enabled;
-	ConCommand ce_mediguninfo_separate_reload;
+    ConVar ce_mediguninfo_separate_enabled;
+    ConCommand ce_mediguninfo_separate_reload;
 
-	static EntityOffset<bool> s_ChargeRelease;
-	static EntityOffset<TFResistType> s_ChargeResistType;
-	static EntityOffset<float> s_ChargeLevel;
+    static EntityOffset<bool> s_ChargeRelease;
+    static EntityOffset<TFResistType> s_ChargeResistType;
+    static EntityOffset<float> s_ChargeLevel;
 
-	void ReloadSettings();
+    void ReloadSettings();
 };

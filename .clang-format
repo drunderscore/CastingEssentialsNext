@@ -1,0 +1,15 @@
+﻿---
+BasedOnStyle: Microsoft
+AccessModifierOffset: '-4'
+AllowShortBlocksOnASingleLine: 'true'
+AllowShortFunctionsOnASingleLine: All
+AlwaysBreakTemplateDeclarations: 'Yes'
+ColumnLimit: '120'
+FixNamespaceComments: 'false'
+IndentCaseLabels: 'true'
+PointerAlignment: Left
+SpaceAfterTemplateKeyword: 'false'
+
+BraceWrapping:
+  AfterCaseLabel: 'true'
+...

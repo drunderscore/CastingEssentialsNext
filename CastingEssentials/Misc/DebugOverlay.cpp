@@ -3,85 +3,91 @@
 #include <debugoverlay_shared.h>
 #include <tier2/renderutils.h>
 
-void NDebugOverlay::Cross3D(const Vector &position, float size, int r, int g, int b, bool noDepthTest, float flDuration)
+void NDebugOverlay::Cross3D(const Vector& position, float size, int r, int g, int b, bool noDepthTest, float flDuration)
 {
-	Line(position + Vector(size, 0, 0), position - Vector(size, 0, 0), r, g, b, noDepthTest, flDuration);
-	Line(position + Vector(0, size, 0), position - Vector(0, size, 0), r, g, b, noDepthTest, flDuration);
-	Line(position + Vector(0, 0, size), position - Vector(0, 0, size), r, g, b, noDepthTest, flDuration);
+    Line(position + Vector(size, 0, 0), position - Vector(size, 0, 0), r, g, b, noDepthTest, flDuration);
+    Line(position + Vector(0, size, 0), position - Vector(0, size, 0), r, g, b, noDepthTest, flDuration);
+    Line(position + Vector(0, 0, size), position - Vector(0, 0, size), r, g, b, noDepthTest, flDuration);
 }
 
-void NDebugOverlay::Line(const Vector &origin, const Vector &target, int r, int g, int b, bool noDepthTest, float duration)
+void NDebugOverlay::Line(const Vector& origin, const Vector& target, int r, int g, int b, bool noDepthTest,
+                         float duration)
 {
 #ifdef NDEBUG_PER_FRAME_SUPPORT
-	if (duration == NDEBUG_PERSIST_TILL_NEXT_FRAME)
-	{
-		HookManager::GetRawFunc_RenderLine()(origin, target, Color(r, g, b), !noDepthTest);
-	}
-	else
+    if (duration == NDEBUG_PERSIST_TILL_NEXT_FRAME)
+    {
+        HookManager::GetRawFunc_RenderLine()(origin, target, Color(r, g, b), !noDepthTest);
+    }
+    else
 #endif
-	{
-		debugoverlay->AddLineOverlay(origin, target, r, g, b, noDepthTest, duration);
-	}
+    {
+        debugoverlay->AddLineOverlay(origin, target, r, g, b, noDepthTest, duration);
+    }
 }
 
-void NDebugOverlay::Box(const Vector &origin, const Vector &mins, const Vector &maxs, int r, int g, int b, int a, float flDuration)
+void NDebugOverlay::Box(const Vector& origin, const Vector& mins, const Vector& maxs, int r, int g, int b, int a,
+                        float flDuration)
 {
-	BoxAngles(origin, mins, maxs, vec3_angle, r, g, b, a, flDuration);
+    BoxAngles(origin, mins, maxs, vec3_angle, r, g, b, a, flDuration);
 }
 
-void NDebugOverlay::BoxAngles(const Vector &origin, const Vector &mins, const Vector &maxs, const QAngle &angles, int r, int g, int b, int a, float duration)
+void NDebugOverlay::BoxAngles(const Vector& origin, const Vector& mins, const Vector& maxs, const QAngle& angles, int r,
+                              int g, int b, int a, float duration)
 {
 #ifdef NDEBUG_PER_FRAME_SUPPORT
-	if (duration == NDEBUG_PERSIST_TILL_NEXT_FRAME)
-	{
-		if (a > 0)
-			HookManager::GetRawFunc_RenderBox()(origin, angles, mins, maxs, Color(r, g, b, a), false, false);
+    if (duration == NDEBUG_PERSIST_TILL_NEXT_FRAME)
+    {
+        if (a > 0)
+            HookManager::GetRawFunc_RenderBox()(origin, angles, mins, maxs, Color(r, g, b, a), false, false);
 
-		HookManager::GetRawFunc_RenderWireframeBox()(origin, angles, mins, maxs, Color(r, g, b, 255), true);
-	}
-	else
+        HookManager::GetRawFunc_RenderWireframeBox()(origin, angles, mins, maxs, Color(r, g, b, 255), true);
+    }
+    else
 #endif
-	{
-		debugoverlay->AddBoxOverlay(origin, mins, maxs, angles, r, g, b, a, duration);
-	}
+    {
+        debugoverlay->AddBoxOverlay(origin, mins, maxs, angles, r, g, b, a, duration);
+    }
 }
 
 void NDebugOverlay::Text(const Vector& origin, const char* text, bool bViewCheck, float duration)
 {
-	debugoverlay->AddTextOverlay(origin, duration, "%s", text);
+    debugoverlay->AddTextOverlay(origin, duration, "%s", text);
 }
 
-void NDebugOverlay::Triangle(const Vector& p1, const Vector& p2, const Vector& p3, int r, int g, int b, int a, bool noDepthTest, float duration)
+void NDebugOverlay::Triangle(const Vector& p1, const Vector& p2, const Vector& p3, int r, int g, int b, int a,
+                             bool noDepthTest, float duration)
 {
 #ifdef NDEBUG_PER_FRAME_SUPPORT
-	if (duration == NDEBUG_PERSIST_TILL_NEXT_FRAME)
-	{
-		HookManager::GetRawFunc_RenderTriangle()(p1, p2, p3, Color(r, g, b, a), !noDepthTest);
-	}
-	else
+    if (duration == NDEBUG_PERSIST_TILL_NEXT_FRAME)
+    {
+        HookManager::GetRawFunc_RenderTriangle()(p1, p2, p3, Color(r, g, b, a), !noDepthTest);
+    }
+    else
 #endif
-	{
-		debugoverlay->AddTriangleOverlay(p1, p2, p3, r, g, b, a, noDepthTest, duration);
-	}
+    {
+        debugoverlay->AddTriangleOverlay(p1, p2, p3, r, g, b, a, noDepthTest, duration);
+    }
 }
 
-void NDebugOverlay::Cross3DOriented(const Vector& position, const QAngle& angles, float size, int r, int g, int b, bool noDepthTest, float flDuration)
+void NDebugOverlay::Cross3DOriented(const Vector& position, const QAngle& angles, float size, int r, int g, int b,
+                                    bool noDepthTest, float flDuration)
 {
-	Vector forward, right, up;
-	AngleVectors(angles, &forward, &right, &up);
+    Vector forward, right, up;
+    AngleVectors(angles, &forward, &right, &up);
 
-	forward *= size;
-	right *= size;
-	up *= size;
+    forward *= size;
+    right *= size;
+    up *= size;
 
-	Line(position + right, position - right, r, g, b, noDepthTest, flDuration);
-	Line(position + forward, position - forward, r, g, b, noDepthTest, flDuration);
-	Line(position + up, position - up, r, g, b, noDepthTest, flDuration);
+    Line(position + right, position - right, r, g, b, noDepthTest, flDuration);
+    Line(position + forward, position - forward, r, g, b, noDepthTest, flDuration);
+    Line(position + up, position - up, r, g, b, noDepthTest, flDuration);
 }
 
-void NDebugOverlay::EntityText(int entityID, int text_offset, const char *text, float duration, int r, int g, int b, int a)
+void NDebugOverlay::EntityText(int entityID, int text_offset, const char* text, float duration, int r, int g, int b,
+                               int a)
 {
-	debugoverlay->AddEntityTextOverlay(entityID, text_offset, duration,
-		(int)clamp(r * 255.f, 0.f, 255.f), (int)clamp(g * 255.f, 0.f, 255.f), (int)clamp(b * 255.f, 0.f, 255.f),
-		(int)clamp(a * 255.f, 0.f, 255.f), text);
+    debugoverlay->AddEntityTextOverlay(entityID, text_offset, duration, (int)clamp(r * 255.f, 0.f, 255.f),
+                                       (int)clamp(g * 255.f, 0.f, 255.f), (int)clamp(b * 255.f, 0.f, 255.f),
+                                       (int)clamp(a * 255.f, 0.f, 255.f), text);
 }

@@ -1,62 +1,63 @@
 #include "VariableLabel.h"
 
-#include <string>
 #include <KeyValues.h>
+#include <string>
 
-inline void FindAndReplaceInString(std::string &str, const std::string &find, const std::string &replace)
+inline void FindAndReplaceInString(std::string& str, const std::string& find, const std::string& replace)
 {
-	if (find.empty())
-		return;
+    if (find.empty())
+        return;
 
-	const char* findstr = find.c_str();
-	const char* found = nullptr;
-	const char* base = str.c_str();
+    const char* findstr = find.c_str();
+    const char* found = nullptr;
+    const char* base = str.c_str();
 
-	while ((found = stristr(base, findstr)) != nullptr)
-	{
-		const auto offset = found - base;
-		str.replace(offset, find.length(), replace);
-		base = str.c_str() + offset + find.length();	// In case we get reallocated
-	}
+    while ((found = stristr(base, findstr)) != nullptr)
+    {
+        const auto offset = found - base;
+        str.replace(offset, find.length(), replace);
+        base = str.c_str() + offset + find.length(); // In case we get reallocated
+    }
 }
 
 using namespace vgui;
 
 DECLARE_BUILD_FACTORY_DEFAULT_TEXT(VariableLabel, VariableLabel);
 
-VariableLabel::VariableLabel(Panel *parent, const char *panelName, const char *labelText) : BaseClass(parent, panelName, labelText)
+VariableLabel::VariableLabel(Panel* parent, const char* panelName, const char* labelText)
+    : BaseClass(parent, panelName, labelText)
 {
-	m_sLabelText = labelText;
+    m_sLabelText = labelText;
 }
 
-void VariableLabel::ApplySettings(KeyValues *inResourceData)
+void VariableLabel::ApplySettings(KeyValues* inResourceData)
 {
-	m_sLabelText = inResourceData->GetString("labelText");
+    m_sLabelText = inResourceData->GetString("labelText");
 
-	BaseClass::ApplySettings(inResourceData);
+    BaseClass::ApplySettings(inResourceData);
 }
 
-void VariableLabel::GetSettings(KeyValues *outResourceData)
+void VariableLabel::GetSettings(KeyValues* outResourceData)
 {
-	BaseClass::GetSettings(outResourceData);
+    BaseClass::GetSettings(outResourceData);
 
-	outResourceData->SetString("labelText", m_sLabelText.c_str());
+    outResourceData->SetString("labelText", m_sLabelText.c_str());
 }
 
-void VariableLabel::OnDialogVariablesChanged(KeyValues *dialogVariables)
+void VariableLabel::OnDialogVariablesChanged(KeyValues* dialogVariables)
 {
-	std::string text = m_sLabelText;
+    std::string text = m_sLabelText;
 
-	FOR_EACH_VALUE(dialogVariables, variable)
-	{
-		std::string find = "%";
-		find.append(variable->GetName());
-		find.append("%");
+    FOR_EACH_VALUE(dialogVariables, variable)
+    {
+        std::string find = "%";
+        find.append(variable->GetName());
+        find.append("%");
 
-		std::string replace = variable->GetString();
+        std::string replace = variable->GetString();
 
-		FindAndReplaceInString(text, find, replace);
-	}
+        FindAndReplaceInString(text, find, replace);
+    }
 
-	SetText(text.c_str());
+    SetText(text.c_str());
 }

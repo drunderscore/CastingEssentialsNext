@@ -1,6 +1,6 @@
 #include "Modules.h"
-#include "PluginBase/Interfaces.h"
 #include "Controls/StubPanel.h"
+#include "PluginBase/Interfaces.h"
 
 #include <cdll_int.h>
 #include <vprof.h>
@@ -14,142 +14,150 @@ ModuleDesc* g_ModuleList = nullptr;
 class ModuleManager::Panel final : public vgui::StubPanel
 {
 public:
-	void OnTick() override;
+    void OnTick() override;
 
 private:
-	void LevelInitAllModules();
-	void LevelShutdownAllModules();
+    void LevelInitAllModules();
+    void LevelShutdownAllModules();
 
-	std::string m_LastLevelName;
+    std::string m_LastLevelName;
 };
 
-void ModuleManager::Init()
-{
-	m_Panel.reset(new Panel());
-}
+void ModuleManager::Init() { m_Panel.reset(new Panel()); }
 
 void ModuleManager::UnloadAllModules()
 {
-	for (auto iterator = modules.rbegin(); iterator != modules.rend(); iterator++)
-	{
-		auto mod = iterator->m_Module->ReplaceSingleton(nullptr); // Grab the singleton instance
-		const std::string moduleName(mod->GetModuleName());
-		mod = nullptr;
-		PluginColorMsg(Color(0, 255, 0, 255), "Module %s unloaded!\n", moduleName.c_str());
-	}
+    for (auto iterator = modules.rbegin(); iterator != modules.rend(); iterator++)
+    {
+        auto mod = iterator->m_Module->ReplaceSingleton(nullptr); // Grab the singleton instance
+        const std::string moduleName(mod->GetModuleName());
+        mod = nullptr;
+        PluginColorMsg(Color(0, 255, 0, 255), "Module %s unloaded!\n", moduleName.c_str());
+    }
 
-	modules.clear();
-	m_Panel.reset();
+    modules.clear();
+    m_Panel.reset();
 }
 
 void ModuleManager::LoadAll()
 {
-	auto md = g_ModuleList;
-	while (md) {
-		try {
-			Load(*md);
-		}
-		catch (const std::exception&) { }
-		md = md->next;
-	}
+    auto md = g_ModuleList;
+    while (md)
+    {
+        try
+        {
+            Load(*md);
+        }
+        catch (const std::exception&)
+        {
+        }
+        md = md->next;
+    }
 }
 
 void ModuleManager::Load(ModuleDesc& desc)
 {
-	switch (desc.state) {
-	case ModuleState::MODULE_FAILED:
-		throw module_load_failed(desc.name.c_str());
-	case ModuleState::MODULE_LOADING:
-		throw module_circular_dependency(desc.name.c_str());
-	case ModuleState::MODULE_LOADED:
-		return;
-	}
+    switch (desc.state)
+    {
+        case ModuleState::MODULE_FAILED:
+            throw module_load_failed(desc.name.c_str());
+        case ModuleState::MODULE_LOADING:
+            throw module_circular_dependency(desc.name.c_str());
+        case ModuleState::MODULE_LOADED:
+            return;
+    }
 
-	desc.state = ModuleState::MODULE_LOADING;
-	try
-	{
-		auto mod = desc.factory();
-		Assert(mod);
-		modules.push_back({ mod.get() });
-		mod->ReplaceSingleton(std::move(mod));
-		desc.state = ModuleState::MODULE_LOADED;
-		PluginColorMsg(Color(0, 255, 0, 255), "Module %s loaded successfully!\n", desc.name.c_str());
-	}
-	catch (const module_circular_dependency& e)
-	{
-		desc.state = ModuleState::MODULE_FAILED;
-		PluginColorMsg(Color(255, 0, 0, 255), "Module %s failed to load because of circular dependency on module %s!\n", desc.name.c_str(), e.what());
-		throw module_load_failed(desc.name.c_str());
-	}
-	catch (const module_dependency_failed& e)
-	{
-		desc.state = ModuleState::MODULE_FAILED;
-		PluginColorMsg(Color(255, 0, 0, 255), "Module %s failed to load because dependency %s did not load!\n", desc.name.c_str(), e.what());
-		throw module_load_failed(desc.name.c_str());
-	}
-	catch (const std::exception& e)
-	{
-		desc.state = ModuleState::MODULE_FAILED;
-		PluginColorMsg(Color(255, 0, 0, 255), "Module %s failed to load! Error: %s\n", desc.name.c_str(), e.what());
-		throw module_load_failed(desc.name.c_str());
-	}
+    desc.state = ModuleState::MODULE_LOADING;
+    try
+    {
+        auto mod = desc.factory();
+        Assert(mod);
+        modules.push_back({mod.get()});
+        mod->ReplaceSingleton(std::move(mod));
+        desc.state = ModuleState::MODULE_LOADED;
+        PluginColorMsg(Color(0, 255, 0, 255), "Module %s loaded successfully!\n", desc.name.c_str());
+    }
+    catch (const module_circular_dependency& e)
+    {
+        desc.state = ModuleState::MODULE_FAILED;
+        PluginColorMsg(Color(255, 0, 0, 255), "Module %s failed to load because of circular dependency on module %s!\n",
+                       desc.name.c_str(), e.what());
+        throw module_load_failed(desc.name.c_str());
+    }
+    catch (const module_dependency_failed& e)
+    {
+        desc.state = ModuleState::MODULE_FAILED;
+        PluginColorMsg(Color(255, 0, 0, 255), "Module %s failed to load because dependency %s did not load!\n",
+                       desc.name.c_str(), e.what());
+        throw module_load_failed(desc.name.c_str());
+    }
+    catch (const std::exception& e)
+    {
+        desc.state = ModuleState::MODULE_FAILED;
+        PluginColorMsg(Color(255, 0, 0, 255), "Module %s failed to load! Error: %s\n", desc.name.c_str(), e.what());
+        throw module_load_failed(desc.name.c_str());
+    }
 }
 
 void ModuleManager::Panel::LevelInitAllModules()
 {
-	IBaseModule::s_InGame = true;
+    IBaseModule::s_InGame = true;
 
-	for (const auto& data : Modules().modules)
-		data.m_Module->LevelInit();
+    for (const auto& data : Modules().modules)
+        data.m_Module->LevelInit();
 }
 void ModuleManager::Panel::LevelShutdownAllModules()
 {
-	IBaseModule::s_InGame = false;
+    IBaseModule::s_InGame = false;
 
-	for (const auto& data : Modules().modules)
-		data.m_Module->LevelShutdown();
+    for (const auto& data : Modules().modules)
+        data.m_Module->LevelShutdown();
 }
 
 void ModuleManager::Panel::OnTick()
 {
-	VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_CE);
+    VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_CE);
 
-	const bool inGame = Interfaces::GetEngineClient()->IsInGame();
+    const bool inGame = Interfaces::GetEngineClient()->IsInGame();
 
-	if (inGame)
-	{
-		const char* const levelName = Interfaces::GetEngineClient()->GetLevelName();
-		if (stricmp(m_LastLevelName.c_str(), levelName))
-		{
-			if (!m_LastLevelName.empty())
-				LevelShutdownAllModules();
+    if (inGame)
+    {
+        const char* const levelName = Interfaces::GetEngineClient()->GetLevelName();
+        if (stricmp(m_LastLevelName.c_str(), levelName))
+        {
+            if (!m_LastLevelName.empty())
+                LevelShutdownAllModules();
 
-			m_LastLevelName = levelName;
+            m_LastLevelName = levelName;
 
-			LevelInitAllModules();
-		}
-	}
-	else if (!m_LastLevelName.empty())
-	{
-		LevelShutdownAllModules();
+            LevelInitAllModules();
+        }
+    }
+    else if (!m_LastLevelName.empty())
+    {
+        LevelShutdownAllModules();
 
-		m_LastLevelName.clear();
-	}
+        m_LastLevelName.clear();
+    }
 
-	Modules().TickAllModules(inGame);
+    Modules().TickAllModules(inGame);
 }
 
 void ModuleManager::TickAllModules(bool inGame)
 {
-	auto ite = modules.begin();
-	while (ite != modules.end()) {
-		try {
-			ite->m_Module->OnTick(inGame);
-			++ite;
-		}
-		catch (std::exception e) {
-			PluginColorMsg(Color(255, 0, 0, 255), "Module %s tick failed, disabling: %s\n", ite->m_Module->GetModuleName(), e.what());
-			ite = modules.erase(ite);
-		}
-	}
+    auto ite = modules.begin();
+    while (ite != modules.end())
+    {
+        try
+        {
+            ite->m_Module->OnTick(inGame);
+            ++ite;
+        }
+        catch (std::exception e)
+        {
+            PluginColorMsg(Color(255, 0, 0, 255), "Module %s tick failed, disabling: %s\n",
+                           ite->m_Module->GetModuleName(), e.what());
+            ite = modules.erase(ite);
+        }
+    }
 }

@@ -9,17 +9,17 @@ class IConVar;
 class AntiFreeze : public Module<AntiFreeze>
 {
 public:
-	AntiFreeze();
+    AntiFreeze();
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "HUD Antifreeze"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "HUD Antifreeze"; }
 
 private:
-	class Panel;
-	std::unique_ptr<Panel> m_Panel;
+    class Panel;
+    std::unique_ptr<Panel> m_Panel;
 
-	void OnTick(bool inGame) override;
+    void OnTick(bool inGame) override;
 
-	ConVar ce_antifreeze_enabled;
-	void ToggleEnabled(IConVar *var, const char *pOldValue, float flOldValue);
+    ConVar ce_antifreeze_enabled;
+    void ToggleEnabled(IConVar* var, const char* pOldValue, float flOldValue);
 };

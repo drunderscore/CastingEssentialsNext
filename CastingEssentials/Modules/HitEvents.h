@@ -19,35 +19,36 @@ using trace_t = class CGameTrace;
 class HitEvents final : public Module<HitEvents>
 {
 public:
-	HitEvents();
+    HitEvents();
 
-	static bool CheckDependencies() { return true; }
-	static constexpr __forceinline const char* GetModuleName() { return "Player Hit Events"; }
+    static bool CheckDependencies() { return true; }
+    static constexpr __forceinline const char* GetModuleName() { return "Player Hit Events"; }
 
 protected:
-	void LevelInit() override;
-	void LevelShutdown() override;
+    void LevelInit() override;
+    void LevelShutdown() override;
 
 private:
-	std::vector<IGameEvent*> m_EventsToIgnore;
-	CDamageAccountPanel* m_Panel { nullptr };
+    std::vector<IGameEvent*> m_EventsToIgnore;
+    CDamageAccountPanel* m_Panel{nullptr};
 
-	void UpdateEnabledState();
+    void UpdateEnabledState();
 
-	void FireGameEventOverride(CDamageAccountPanel* pThis, IGameEvent* event);
+    void FireGameEventOverride(CDamageAccountPanel* pThis, IGameEvent* event);
 
-	bool m_OverrideUTILTraceline;
-	void UTILTracelineOverride(const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask, const IHandleEntity* ignore, int collisionGroup, trace_t* ptr);
+    bool m_OverrideUTILTraceline;
+    void UTILTracelineOverride(const Vector& vecAbsStart, const Vector& vecAbsEnd, unsigned int mask,
+                               const IHandleEntity* ignore, int collisionGroup, trace_t* ptr);
 
-	bool DamageAccountPanelShouldDrawOverride(CDamageAccountPanel* pThis);
+    bool DamageAccountPanelShouldDrawOverride(CDamageAccountPanel* pThis);
 
-	Hook<HookFunc::CDamageAccountPanel_FireGameEvent> m_FireGameEventHook;
-	Hook<HookFunc::Global_UTIL_TraceLine> m_UTILTracelineHook;
-	Hook<HookFunc::CDamageAccountPanel_ShouldDraw> m_DamageAccountPanelShouldDrawHook;
+    Hook<HookFunc::CDamageAccountPanel_FireGameEvent> m_FireGameEventHook;
+    Hook<HookFunc::Global_UTIL_TraceLine> m_UTILTracelineHook;
+    Hook<HookFunc::CDamageAccountPanel_ShouldDraw> m_DamageAccountPanelShouldDrawHook;
 
-	CAccountPanel* m_LastDamageAccount;
+    CAccountPanel* m_LastDamageAccount;
 
-	ConVar ce_hitevents_enabled;
-	ConVar ce_hitevents_dmgnumbers_los;
-	ConVar ce_hitevents_healing_crossbow_only;
+    ConVar ce_hitevents_enabled;
+    ConVar ce_hitevents_dmgnumbers_los;
+    ConVar ce_hitevents_healing_crossbow_only;
 };

@@ -6,15 +6,15 @@
 
 void PlayerStateBase::Update()
 {
-	auto tool = Interfaces::GetEngineTool();
-	if (!tool)
-		return;
+    auto tool = Interfaces::GetEngineTool();
+    if (!tool)
+        return;
 
-	const auto tick = tool->ClientTick();
-	const auto frame = tool->HostFrameCount();
+    const auto tick = tool->ClientTick();
+    const auto frame = tool->HostFrameCount();
 
-	UpdateInternal(tick != m_LastTickUpdate, frame != m_LastFrameUpdate);
+    UpdateInternal(tick != m_LastTickUpdate, frame != m_LastFrameUpdate);
 
-	m_LastTickUpdate = tick;
-	m_LastFrameUpdate = frame;
+    m_LastTickUpdate = tick;
+    m_LastFrameUpdate = frame;
 }

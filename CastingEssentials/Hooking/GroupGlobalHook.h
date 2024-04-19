@@ -5,117 +5,132 @@
 
 namespace Hooking
 {
-	template<class FuncEnumType, FuncEnumType hookID, bool vaArgs, class OriginalFnType, class DetourFnType, class FunctionalType, class RetVal, class... Args>
-	class BaseGroupGlobalHook : public BaseGroupHook<FuncEnumType, hookID, FunctionalType, RetVal, Args...>
-	{
-		static_assert(!vaArgs || (sizeof...(Args) >= 1), "Must have at least 1 concrete argument defined for a variable-argument function");
-	public:
-		using BaseGroupGlobalHookType = BaseGroupGlobalHook;
-		using SelfType = BaseGroupGlobalHookType;
-		typedef OriginalFnType OriginalFnType;
-		typedef DetourFnType DetourFnType;
+template<class FuncEnumType, FuncEnumType hookID, bool vaArgs, class OriginalFnType, class DetourFnType,
+         class FunctionalType, class RetVal, class... Args>
+class BaseGroupGlobalHook : public BaseGroupHook<FuncEnumType, hookID, FunctionalType, RetVal, Args...>
+{
+    static_assert(!vaArgs || (sizeof...(Args) >= 1),
+                  "Must have at least 1 concrete argument defined for a variable-argument function");
 
-		BaseGroupGlobalHook(OriginalFnType fn, DetourFnType detour = nullptr)
-		{
-			m_OriginalFunction = fn;
-			//Assert(m_OriginalFunction); we pass in null for GroupGlobalVirtualHook >.>
+public:
+    using BaseGroupGlobalHookType = BaseGroupGlobalHook;
+    using SelfType = BaseGroupGlobalHookType;
+    typedef OriginalFnType OriginalFnType;
+    typedef DetourFnType DetourFnType;
 
-			m_DetourFunction = detour;
-		}
+    BaseGroupGlobalHook(OriginalFnType fn, DetourFnType detour = nullptr)
+    {
+        m_OriginalFunction = fn;
+        // Assert(m_OriginalFunction); we pass in null for GroupGlobalVirtualHook >.>
 
-		virtual HookType GetType() const override { return HookType::Global; }
-		virtual int GetUniqueHookID() const override { return (int)hookID; }
+        m_DetourFunction = detour;
+    }
 
-	protected:
-		static SelfType* This() { return assert_cast<SelfType*>(BaseThis()); }
+    virtual HookType GetType() const override { return HookType::Global; }
+    virtual int GetUniqueHookID() const override { return (int)hookID; }
 
-		static Internal::GlobalDetourFnPtr<RetVal, Args...> GlobalDetourFn()
-		{
-			return &HookFunctionsInvoker<RetVal>::Invoke;
-		}
+protected:
+    static SelfType* This() { return assert_cast<SelfType*>(BaseThis()); }
 
-		DetourFnType m_DetourFunction;
+    static Internal::GlobalDetourFnPtr<RetVal, Args...> GlobalDetourFn()
+    {
+        return &HookFunctionsInvoker<RetVal>::Invoke;
+    }
 
-		virtual DetourFnType DefaultDetourFn() = 0;
+    DetourFnType m_DetourFunction;
 
-		virtual void InitHook() override
-		{
-			Assert(GetType() == HookType::Global || GetType() == HookType::Class || GetType() == HookType::GlobalClass);
+    virtual DetourFnType DefaultDetourFn() = 0;
 
-			if (!m_DetourFunction)
-				m_DetourFunction = (DetourFnType)DefaultDetourFn();
+    virtual void InitHook() override
+    {
+        Assert(GetType() == HookType::Global || GetType() == HookType::Class || GetType() == HookType::GlobalClass);
 
-			Assert(m_OriginalFunction);
-			Assert(m_DetourFunction);
+        if (!m_DetourFunction)
+            m_DetourFunction = (DetourFnType)DefaultDetourFn();
 
-			if (!m_BaseHook)
-			{
-				std::lock_guard<std::recursive_mutex> lock(m_BaseHookMutex);
-				if (!m_BaseHook)
-				{
-					m_BaseHook = CreateDetour(m_OriginalFunction, m_DetourFunction);
-					m_BaseHook->Hook();
-				}
-			}
-		}
+        Assert(m_OriginalFunction);
+        Assert(m_DetourFunction);
 
-		template<size_t... Is> FunctionalType GetOriginalImpl(std::index_sequence<Is...>)
-		{
-			Assert(GetType() == HookType::Global);
+        if (!m_BaseHook)
+        {
+            std::lock_guard<std::recursive_mutex> lock(m_BaseHookMutex);
+            if (!m_BaseHook)
+            {
+                m_BaseHook = CreateDetour(m_OriginalFunction, m_DetourFunction);
+                m_BaseHook->Hook();
+            }
+        }
+    }
 
-			// Make sure we're initialized so we don't have any nasty race conditions
-			InitHook();
+    template<size_t... Is>
+    FunctionalType GetOriginalImpl(std::index_sequence<Is...>)
+    {
+        Assert(GetType() == HookType::Global);
 
-			if (m_BaseHook)
-			{
-				OriginalFnType originalFnPtr = (OriginalFnType)(m_BaseHook->GetOriginalFunction());
-				return std::bind(originalFnPtr, (std::_Ph<(int)(Is + 1)>{})...);
-			}
-			else
-			{
-				Assert(!"Should never get here... hook should be initialized so we don't have a potential race condition!");
-				return nullptr;
-			}
-		}
+        // Make sure we're initialized so we don't have any nasty race conditions
+        InitHook();
 
-		struct ConstructorParam1;
-		struct ConstructorParam2;
-		struct ConstructorParam3;
-		BaseGroupGlobalHook(ConstructorParam1* detour)
-		{
-			m_OriginalFunction = nullptr;
-			m_DetourFunction = (DetourFnType)detour;
-		}
+        if (m_BaseHook)
+        {
+            OriginalFnType originalFnPtr = (OriginalFnType)(m_BaseHook->GetOriginalFunction());
+            return std::bind(originalFnPtr, (std::_Ph<(int)(Is + 1)>{})...);
+        }
+        else
+        {
+            Assert(!"Should never get here... hook should be initialized so we don't have a potential race condition!");
+            return nullptr;
+        }
+    }
 
-	private:
-		OriginalFnType m_OriginalFunction;
+    struct ConstructorParam1;
+    struct ConstructorParam2;
+    struct ConstructorParam3;
+    BaseGroupGlobalHook(ConstructorParam1* detour)
+    {
+        m_OriginalFunction = nullptr;
+        m_DetourFunction = (DetourFnType)detour;
+    }
 
-		BaseGroupGlobalHook() = delete;
-		BaseGroupGlobalHook(const SelfType& other) = delete;
-	};
+private:
+    OriginalFnType m_OriginalFunction;
 
-	template<class FuncEnumType, FuncEnumType hookID, bool vaArgs, class RetVal, class... Args> class GroupGlobalHook;
+    BaseGroupGlobalHook() = delete;
+    BaseGroupGlobalHook(const SelfType& other) = delete;
+};
 
-	// Non variable-arguments version
-	template<class FuncEnumType, FuncEnumType hookID, class RetVal, class... Args>
-	class GroupGlobalHook<FuncEnumType, hookID, false, RetVal, Args...> final :
-		public BaseGroupGlobalHook<FuncEnumType, hookID, false, Internal::GlobalDetourFnPtr<RetVal, Args...>, Internal::GlobalDetourFnPtr<RetVal, Args...>, Internal::GlobalFunctionalType<RetVal, Args...>, RetVal, Args...>
-	{
-	public:
-		typedef GroupGlobalHook<FuncEnumType, hookID, false, RetVal, Args...> GroupGlobalHookType;
-		typedef GroupGlobalHookType SelfType;
-		using BaseType = BaseGroupGlobalHook<FuncEnumType, hookID, false, Internal::GlobalDetourFnPtr<RetVal, Args...>, Internal::GlobalDetourFnPtr<RetVal, Args...>, Internal::GlobalFunctionalType<RetVal, Args...>, RetVal, Args...>;
+template<class FuncEnumType, FuncEnumType hookID, bool vaArgs, class RetVal, class... Args>
+class GroupGlobalHook;
 
-		GroupGlobalHook(typename BaseType::OriginalFnType fn, typename BaseType::DetourFnType detour = nullptr) : BaseType(fn, detour) { }
+// Non variable-arguments version
+template<class FuncEnumType, FuncEnumType hookID, class RetVal, class... Args>
+class GroupGlobalHook<FuncEnumType, hookID, false, RetVal, Args...> final
+    : public BaseGroupGlobalHook<FuncEnumType, hookID, false, Internal::GlobalDetourFnPtr<RetVal, Args...>,
+                                 Internal::GlobalDetourFnPtr<RetVal, Args...>,
+                                 Internal::GlobalFunctionalType<RetVal, Args...>, RetVal, Args...>
+{
+public:
+    typedef GroupGlobalHook<FuncEnumType, hookID, false, RetVal, Args...> GroupGlobalHookType;
+    typedef GroupGlobalHookType SelfType;
+    using BaseType = BaseGroupGlobalHook<FuncEnumType, hookID, false, Internal::GlobalDetourFnPtr<RetVal, Args...>,
+                                         Internal::GlobalDetourFnPtr<RetVal, Args...>,
+                                         Internal::GlobalFunctionalType<RetVal, Args...>, RetVal, Args...>;
 
-		virtual typename BaseType::Functional GetOriginal() override { return GetOriginalImpl(std::index_sequence_for<Args...>{}); }
+    GroupGlobalHook(typename BaseType::OriginalFnType fn, typename BaseType::DetourFnType detour = nullptr)
+        : BaseType(fn, detour)
+    {
+    }
 
-	private:
-		typename BaseType::DetourFnType DefaultDetourFn() override { return GlobalDetourFn(); }
+    virtual typename BaseType::Functional GetOriginal() override
+    {
+        return GetOriginalImpl(std::index_sequence_for<Args...>{});
+    }
 
-		GroupGlobalHook() = delete;
-		GroupGlobalHook(const SelfType& other) = delete;
-	};
+private:
+    typename BaseType::DetourFnType DefaultDetourFn() override { return GlobalDetourFn(); }
+
+    GroupGlobalHook() = delete;
+    GroupGlobalHook(const SelfType& other) = delete;
+};
 
 #if 0
 	// Variable arguments version

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Misc/CommandCallbacks.h"
 #include "Misc/CRefPtrFix.h"
+#include "Misc/CommandCallbacks.h"
 #include "PluginBase/EntityOffset.h"
 #include "PluginBase/Hook.h"
 #include "PluginBase/Modules.h"
@@ -25,179 +25,183 @@ class Player;
 class Graphics final : public Module<Graphics>
 {
 public:
-	Graphics();
+    Graphics();
 
-	const ConVar& GetDebugGlowConVar() const { return ce_graphics_debug_glow; }
+    const ConVar& GetDebugGlowConVar() const { return ce_graphics_debug_glow; }
 
-	static bool CheckDependencies();
-	static constexpr __forceinline const char* GetModuleName() { return "Graphics Enhancements"; }
+    static bool CheckDependencies();
+    static constexpr __forceinline const char* GetModuleName() { return "Graphics Enhancements"; }
 
 protected:
-	void OnTick(bool inGame) override;
+    void OnTick(bool inGame) override;
 
 private:
-	ConVar ce_graphics_disable_prop_fades;
-	ConVar ce_graphics_debug_glow;
-	ConVar ce_graphics_glow_silhouettes;
-	ConVar ce_graphics_improved_glows;
-	ConVar ce_graphics_fix_invisible_players;
-	ConVar ce_graphics_fix_viewmodel_particles;
+    ConVar ce_graphics_disable_prop_fades;
+    ConVar ce_graphics_debug_glow;
+    ConVar ce_graphics_glow_silhouettes;
+    ConVar ce_graphics_improved_glows;
+    ConVar ce_graphics_fix_invisible_players;
+    ConVar ce_graphics_fix_viewmodel_particles;
 
-	ConVar ce_graphics_fxaa;
-	ConVar ce_graphics_fxaa_debug;
+    ConVar ce_graphics_fxaa;
+    ConVar ce_graphics_fxaa_debug;
 
-	ConVar ce_outlines_players_override_red;
-	ConVar ce_outlines_players_override_blue;
-	ConVar ce_outlines_blur;
-	ConVar ce_outlines_expand;
-	ConVar ce_outlines_debug_stencil_out;
-	ConVar ce_outlines_debug;
-	ConVar ce_outlines_spy_visibility;
-	ConVar ce_outlines_cull_frustum;
-	ConVar ce_outlines_pvs_optimizations;
+    ConVar ce_outlines_players_override_red;
+    ConVar ce_outlines_players_override_blue;
+    ConVar ce_outlines_blur;
+    ConVar ce_outlines_expand;
+    ConVar ce_outlines_debug_stencil_out;
+    ConVar ce_outlines_debug;
+    ConVar ce_outlines_spy_visibility;
+    ConVar ce_outlines_cull_frustum;
+    ConVar ce_outlines_pvs_optimizations;
 
-	ConCommand ce_infills_test;
-	ConVar ce_infills_enable;
-	ConVar ce_infills_additive;
-	ConVar ce_infills_debug;
-	ConVar ce_infills_hurt_red;
-	ConVar ce_infills_hurt_blue;
-	//ConVar* ce_infills_normal_direction;
-	ConVar ce_infills_buffed_red;
-	ConVar ce_infills_buffed_blue;
-	//ConVar* ce_infills_buffed_direction;
+    ConCommand ce_infills_test;
+    ConVar ce_infills_enable;
+    ConVar ce_infills_additive;
+    ConVar ce_infills_debug;
+    ConVar ce_infills_hurt_red;
+    ConVar ce_infills_hurt_blue;
+    // ConVar* ce_infills_normal_direction;
+    ConVar ce_infills_buffed_red;
+    ConVar ce_infills_buffed_blue;
+    // ConVar* ce_infills_buffed_direction;
 
-	ConVar ce_infills_flicker_hertz;
-	ConVar ce_infills_flicker_intensity;
-	ConVar ce_infills_flicker_after_hurt_time;
-	ConVar ce_infills_flicker_after_hurt_bias;
-	ConVar ce_infills_fade_after_hurt_time;
-	ConVar ce_infills_fade_after_hurt_bias;
+    ConVar ce_infills_flicker_hertz;
+    ConVar ce_infills_flicker_intensity;
+    ConVar ce_infills_flicker_after_hurt_time;
+    ConVar ce_infills_flicker_after_hurt_bias;
+    ConVar ce_infills_fade_after_hurt_time;
+    ConVar ce_infills_fade_after_hurt_bias;
 
-	ConCommand ce_graphics_dump_shader_params;
-	ConCommand ce_graphics_dump_rts;
+    ConCommand ce_graphics_dump_shader_params;
+    ConCommand ce_graphics_dump_rts;
 
-	static bool IsDefaultParam(const char* paramName);
-	CommandCallbacks m_ShaderParamsCallbacks;
-	static void DumpShaderParams(const CCommand& cmd);
-	static void DumpShaderParamsAutocomplete(const CCommand& partial, CUtlVector<CUtlString>& outSuggestions);
+    static bool IsDefaultParam(const char* paramName);
+    CommandCallbacks m_ShaderParamsCallbacks;
+    static void DumpShaderParams(const CCommand& cmd);
+    static void DumpShaderParamsAutocomplete(const CCommand& partial, CUtlVector<CUtlString>& outSuggestions);
 
-	static void DumpRTs(const CCommand& cmd);
+    static void DumpRTs(const CCommand& cmd);
 
-	void ToggleFXAA(const ConVar* var);
-	Hook<HookFunc::CViewRender_PerformScreenSpaceEffects> m_PostEffectsHook;
-	void PostEffectsOverride(CViewRender* pThis, int x, int y, int w, int h);
-	void DrawFXAA(int x, int y, int w, int h);
+    void ToggleFXAA(const ConVar* var);
+    Hook<HookFunc::CViewRender_PerformScreenSpaceEffects> m_PostEffectsHook;
+    void PostEffectsOverride(CViewRender* pThis, int x, int y, int w, int h);
+    void DrawFXAA(int x, int y, int w, int h);
 
-	Hook<HookFunc::IStaticPropMgrClient_ComputePropOpacity> m_ComputePropOpacityHook;
-	Hook<HookFunc::Global_UTILComputeEntityFade> m_ComputeEntityFadeHook;
-	void TogglePropFade(const ConVar* var);
-	void ComputePropOpacityOverride(const Vector& viewOrigin, float factor);
-	unsigned char ComputeEntityFadeOveride(C_BaseEntity* entity, float minDist, float maxDist, float fadeScale);
+    Hook<HookFunc::IStaticPropMgrClient_ComputePropOpacity> m_ComputePropOpacityHook;
+    Hook<HookFunc::Global_UTILComputeEntityFade> m_ComputeEntityFadeHook;
+    void TogglePropFade(const ConVar* var);
+    void ComputePropOpacityOverride(const Vector& viewOrigin, float factor);
+    unsigned char ComputeEntityFadeOveride(C_BaseEntity* entity, float minDist, float maxDist, float fadeScale);
 
-	Hook<HookFunc::CGlowObjectManager_ApplyEntityGlowEffects> m_ApplyEntityGlowEffectsHook;
-	void ToggleImprovedGlows(const ConVar* var);
-	void ApplyEntityGlowEffectsOverride(CGlowObjectManager* pThis, const CViewSetup* pSetup, int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext, float flBloomScale, int x, int y, int w, int h);
+    Hook<HookFunc::CGlowObjectManager_ApplyEntityGlowEffects> m_ApplyEntityGlowEffectsHook;
+    void ToggleImprovedGlows(const ConVar* var);
+    void ApplyEntityGlowEffectsOverride(CGlowObjectManager* pThis, const CViewSetup* pSetup, int nSplitScreenSlot,
+                                        CMatRenderContextPtr& pRenderContext, float flBloomScale, int x, int y, int w,
+                                        int h);
 
-	Hook<HookFunc::IStudioRender_ForcedMaterialOverride> m_ForcedMaterialOverrideHook;
-	void ForcedMaterialOverrideOverride(IMaterial* material, OverrideType_t overrideType);
+    Hook<HookFunc::IStudioRender_ForcedMaterialOverride> m_ForcedMaterialOverrideHook;
+    void ForcedMaterialOverrideOverride(IMaterial* material, OverrideType_t overrideType);
 
-	Hook<HookFunc::C_BasePlayer_ShouldDrawThisPlayer> m_ShouldDrawLocalPlayerHook;
-	Hook<HookFunc::C_TFWeaponBase_PostDataUpdate> m_PostDataUpdateHook;
-	C_BaseEntity* m_LocalOwner{ nullptr };
-	void ToggleFixViewmodel(const ConVar* var);
-	void PostDataUpdateOverride(IClientNetworkable* pThis, int updateType);
-	bool ShouldDrawLocalPlayerOverride(C_BasePlayer* pThis);
+    Hook<HookFunc::C_BasePlayer_ShouldDrawThisPlayer> m_ShouldDrawLocalPlayerHook;
+    Hook<HookFunc::C_TFWeaponBase_PostDataUpdate> m_PostDataUpdateHook;
+    C_BaseEntity* m_LocalOwner{nullptr};
+    void ToggleFixViewmodel(const ConVar* var);
+    void PostDataUpdateOverride(IClientNetworkable* pThis, int updateType);
+    bool ShouldDrawLocalPlayerOverride(C_BasePlayer* pThis);
 
-	void DrawGlowAlways(int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext) const;
-	void DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext) const;
-	void DrawGlowVisible(int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext) const;
+    void DrawGlowAlways(int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext) const;
+    void DrawGlowOccluded(int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext) const;
+    void DrawGlowVisible(int nSplitScreenSlot, CMatRenderContextPtr& pRenderContext) const;
 
-	enum class InfillType
-	{
-		Hurt,
-		Buffed,
+    enum class InfillType
+    {
+        Hurt,
+        Buffed,
 
-		Count
-	};
+        Count
+    };
 
-	enum class GlowMode
-	{
-		Never,
-		Occluded = (1 << 0),
-		Unoccluded = (1 << 1),
-		Always = (Occluded | Unoccluded)
-	};
+    enum class GlowMode
+    {
+        Never,
+        Occluded = (1 << 0),
+        Unoccluded = (1 << 1),
+        Always = (Occluded | Unoccluded)
+    };
 
-	struct Infill
-	{
-		bool m_Active = false;
-		Color m_Color;
-		Vector2D m_RectMin = Vector2D(-1, -1);
-		Vector2D m_RectMax = Vector2D(-1, -1);
-	};
+    struct Infill
+    {
+        bool m_Active = false;
+        Color m_Color;
+        Vector2D m_RectMin = Vector2D(-1, -1);
+        Vector2D m_RectMax = Vector2D(-1, -1);
+    };
 
-	class PlayerHealthState : public PlayerStateBase
-	{
-	public:
-		PlayerHealthState(Player& player) : PlayerStateBase(player) {}
+    class PlayerHealthState : public PlayerStateBase
+    {
+    public:
+        PlayerHealthState(Player& player) : PlayerStateBase(player) {}
 
-		void ResetLastHurtTime();
-		float GetLastHurtTime() const;
+        void ResetLastHurtTime();
+        float GetLastHurtTime() const;
 
-	protected:
-		void UpdateInternal(bool tickUpdate, bool frameUpdate) override;
+    protected:
+        void UpdateInternal(bool tickUpdate, bool frameUpdate) override;
 
-	private:
-		float m_LastHurtTime;
-		int m_LastHurtHealth;
-	};
+    private:
+        float m_LastHurtTime;
+        int m_LastHurtHealth;
+    };
 
-	friend class CGlowObjectManager;
-	struct ExtraGlowData
-	{
-		ExtraGlowData(CGlowObjectManager::GlowObjectDefinition_t* base);
+    friend class CGlowObjectManager;
+    struct ExtraGlowData
+    {
+        ExtraGlowData(CGlowObjectManager::GlowObjectDefinition_t* base);
 
-		CGlowObjectManager::GlowObjectDefinition_t* m_Base;
+        CGlowObjectManager::GlowObjectDefinition_t* m_Base;
 
-		bool m_ShouldOverrideGlowColor;
-		Vector m_GlowColorOverride;
+        bool m_ShouldOverrideGlowColor;
+        Vector m_GlowColorOverride;
 
-		uint8_t m_StencilIndex;
+        uint8_t m_StencilIndex;
 
-		GlowMode m_Mode;
+        GlowMode m_Mode;
 
-		bool AnyInfillsActive() const;
+        bool AnyInfillsActive() const;
 
-		// Applies the glow color settings to the rendering system
-		void ApplyGlowColor() const;
+        // Applies the glow color settings to the rendering system
+        void ApplyGlowColor() const;
 
-		std::array<Infill, (size_t)InfillType::Count> m_Infills;
+        std::array<Infill, (size_t)InfillType::Count> m_Infills;
 
-		// This list is refreshed every frame and only used within a single "entry"
-		// into our glow system, so it's ok to use pointers here rather than EHANDLES
-		std::vector<C_BaseEntity*> m_MoveChildren;
-	};
-	std::vector<ExtraGlowData> m_ExtraGlowData;
-	const CViewSetup* m_View;
+        // This list is refreshed every frame and only used within a single "entry"
+        // into our glow system, so it's ok to use pointers here rather than EHANDLES
+        std::vector<C_BaseEntity*> m_MoveChildren;
+    };
+    std::vector<ExtraGlowData> m_ExtraGlowData;
+    const CViewSetup* m_View;
 
-	void ResetPlayerHurtTimes();
+    void ResetPlayerHurtTimes();
 
-	void BuildMoveChildLists();
-	ExtraGlowData* FindExtraGlowData(int entindex);
-	void BuildExtraGlowData(CGlowObjectManager* glowMgr, bool& anyAlways, bool& anyOccluded, bool& anyUnoccluded);
-	void EnforceSpyVisibility(Player& player, CGlowObjectManager::GlowObjectDefinition_t& outline) const;
+    void BuildMoveChildLists();
+    ExtraGlowData* FindExtraGlowData(int entindex);
+    void BuildExtraGlowData(CGlowObjectManager* glowMgr, bool& anyAlways, bool& anyOccluded, bool& anyUnoccluded);
+    void EnforceSpyVisibility(Player& player, CGlowObjectManager::GlowObjectDefinition_t& outline) const;
 
-	bool WorldToScreenMat(const VMatrix& worldToScreen, const Vector& world, Vector2D& screen);
+    bool WorldToScreenMat(const VMatrix& worldToScreen, const Vector& world, Vector2D& screen);
 
-	static void GetAABBCorner(const Vector& mins, const Vector& maxs, uint_fast8_t cornerIndex, Vector& corner);
-	static void GetRotatedBBCorners(const Vector& origin, const QAngle& angles, const Vector& mins, const Vector& maxs, Vector corners[8]);
+    static void GetAABBCorner(const Vector& mins, const Vector& maxs, uint_fast8_t cornerIndex, Vector& corner);
+    static void GetRotatedBBCorners(const Vector& origin, const QAngle& angles, const Vector& mins, const Vector& maxs,
+                                    Vector corners[8]);
 
-	bool Test_PlaneHitboxesIntersect(C_BaseAnimating* animating, const Frustum_t& viewFrustum, const VMatrix& worldToScreen, Vector2D& screenMins, Vector2D& screenMaxs);
+    bool Test_PlaneHitboxesIntersect(C_BaseAnimating* animating, const Frustum_t& viewFrustum,
+                                     const VMatrix& worldToScreen, Vector2D& screenMins, Vector2D& screenMaxs);
 
-	float ApplyInfillTimeEffects(float lastHurtTime);
-	void DrawInfills(CMatRenderContextPtr& pRenderContext);
+    float ApplyInfillTimeEffects(float lastHurtTime);
+    void DrawInfills(CMatRenderContextPtr& pRenderContext);
 
-	static EntityOffset<CHandle<C_BaseEntity>> s_MoveParent;
-	static EntityTypeChecker s_TFViewModelType;
+    static EntityOffset<CHandle<C_BaseEntity>> s_MoveParent;
+    static EntityTypeChecker s_TFViewModelType;
 };
