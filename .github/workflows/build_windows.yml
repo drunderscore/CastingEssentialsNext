@@ -1,0 +1,49 @@
+name: Build for Windows
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Install MSVC Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+        toolset: 14.16
+        # This is the SDK version I've tested to work. Newer ones have certain issues with Source's memoverride.cpp
+        sdk: 10.0.17763.0
+
+    - name: Install ninja
+      uses: seanmiddleditch/gha-setup-ninja@master
+
+    - name: Perform Build
+      run: |
+        mkdir ${{ steps.strings.outputs.build-output-dir }}
+        cd ${{ steps.strings.outputs.build-output-dir }}
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo -S ${{ github.workspace }} -DCMAKE_CXX_COMPILER=cl -DCMAKE_C_COMPILER=cl
+        ninja
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: output
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/CastingEssentials.dll
+          ${{ steps.strings.outputs.build-output-dir }}/CastingEssentials.pdb
