@@ -104,10 +104,6 @@ target_compile_definitions(CastingEssentials PRIVATE
     MOVE_CONSTRUCTOR_SUPPORT
     USES_ECON_ITEMS
     CE_DLL
-    _M_X64
-    _AMD64_
-    PLATFORM_64BITS
-    X64BITS
     COMPILER_MSVC64
     WIN64
     _WINDOWS
