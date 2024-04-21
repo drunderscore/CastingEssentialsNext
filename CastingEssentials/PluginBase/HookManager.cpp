@@ -261,7 +261,9 @@ void HookManager::InitRawFunctionsList()
                                                             "xxxxxxxxxxxx");
     FindFunc<HookFunc::CAccountPanel_Paint>("\x55\x8B\xEC\x83\xEC\x74\x56\x8B\xC1", "xxxxxxxxx");
     FindFunc<HookFunc::CBaseClientRenderTargets_InitClientRenderTargets>(
-        "\x55\x8B\xEC\x51\x53\x8B\x5D\x08\x56\x57\x6A\x01", "xxxxxxxxxxxx");
+        "\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x50\x48"
+        "\x8B\x1A\x48\x8B\xE9\x48\x8B\xCA\x41\x8B\xF9\x48\x8B\xF2",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     FindFunc<HookFunc::CDamageAccountPanel_FireGameEvent>("\x48\x89\x5C\x24\x10\x48\x89\x6C\x24\x18\x56\x57\x41\x54\x41"
                                                           "\x56\x41\x57\x48\x81\xEC\xC0\x00\x00\x00\x48\x8B\x02",
                                                           "xxxxxxxxxxxxxxxxxxxxxxxxxxxx");
