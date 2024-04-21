@@ -26,7 +26,6 @@ add_library(CastingEssentials SHARED
     CastingEssentials/Controls/VariableLabel.cpp
     CastingEssentials/Hooking/IBaseHook.cpp
     CastingEssentials/Hooking/IGroupHook.cpp
-    CastingEssentials/Hooking/ModuleSegments.cpp
     CastingEssentials/Misc/DebugOverlay.cpp
     CastingEssentials/Misc/OffsetChecking.cpp
     CastingEssentials/Modules/ClientTools.cpp

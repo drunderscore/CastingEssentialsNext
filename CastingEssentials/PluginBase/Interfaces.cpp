@@ -1,6 +1,5 @@
 #include "Interfaces.h"
 #include "Exceptions.h"
-#include "Hooking/ModuleSegments.h"
 #include "Misc/HLTVCameraHack.h"
 #include "PluginBase/HookManager.h"
 
