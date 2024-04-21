@@ -200,11 +200,11 @@ HLTVCameraOverride* Interfaces::GetHLTVCamera()
         if (address_of_call == OFFSET)
             throw bad_pointer("HLTVCamera()");
 
-        auto relative_address_in_call = *reinterpret_cast<uint32_t*>(address_of_call + 1);
+        auto relative_address_in_call = *reinterpret_cast<int32_t*>(address_of_call + 1);
 
         typedef C_HLTVCamera* (*C_HLTVCameraSingletonGetterFn)();
-        auto hltv_camera_getter = reinterpret_cast<C_HLTVCameraSingletonGetterFn>(
-            (address_of_call + 4 + relative_address_in_call) - 0xFFFFFFFF);
+        auto hltv_camera_getter =
+            reinterpret_cast<C_HLTVCameraSingletonGetterFn>(address_of_call + 5 + relative_address_in_call);
         s_HLTVCamera = hltv_camera_getter();
     }
 
