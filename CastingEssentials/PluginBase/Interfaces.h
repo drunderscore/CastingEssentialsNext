@@ -87,8 +87,6 @@ public:
     // #include "Misc/HLTVCameraHack.h"
     static HLTVCameraOverride* GetHLTVCamera();
 
-    static C_BasePlayer*& GetLocalPlayer();
-
     // #include <engine/ivdebugoverlay.h>
     static IVDebugOverlay* GetDebugOverlay() { return s_DebugOverlay; }
 

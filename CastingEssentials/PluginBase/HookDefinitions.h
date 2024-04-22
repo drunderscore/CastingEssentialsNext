@@ -90,7 +90,6 @@ enum class HookFunc
 
     C_BasePlayer_GetDefaultFOV,
     C_BasePlayer_GetFOV,
-    C_BasePlayer_GetLocalPlayer,
     C_BasePlayer_ShouldDrawThisPlayer,
 
     C_HLTVCamera_SetMode,
@@ -401,11 +400,6 @@ protected:
     struct HookFuncType<HookFunc::C_BasePlayer_GetFOV>
     {
         typedef float (*Raw)(C_BasePlayer* pThis);
-    };
-    template<>
-    struct HookFuncType<HookFunc::C_BasePlayer_GetLocalPlayer>
-    {
-        typedef C_BasePlayer* (*Raw)();
     };
     template<>
     struct HookFuncType<HookFunc::C_BasePlayer_ShouldDrawThisPlayer>

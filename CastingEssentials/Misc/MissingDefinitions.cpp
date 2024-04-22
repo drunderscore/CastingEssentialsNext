@@ -166,8 +166,6 @@ float UTIL_VecToYaw(const Vector& vec)
     return yaw;
 }
 
-C_BasePlayer* C_BasePlayer::GetLocalPlayer() { return Interfaces::GetLocalPlayer(); }
-
 void C_BasePlayer::EyeVectors(Vector* pForward, Vector* pRight, Vector* pUp)
 {
 #ifdef CE_DISABLED

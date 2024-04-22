@@ -126,30 +126,9 @@ std::byte* SignatureScan(const char* moduleName, const char* signature, const ch
     return found;
 }
 
-void HookManager::FindFunc_C_BasePlayer_GetLocalPlayer()
-{
-    // We know that C_BasePlayer::GetLocalPlayerIndex() immediately calls C_BasePlayer::GetLocalPlayer().
-    // Since GetLocalPlayer just returns a global variable, it's not reliable to find it with a signature.
-    // Instead, we find GetLocalPlayer indirectly through GetLocalPlayerIndex.
-    auto localPlayerIndexFn = reinterpret_cast<uintptr_t>(GetRawFunc<HookFunc::Global_GetLocalPlayerIndex>());
-    if (!localPlayerIndexFn)
-        return;
-
-    static constexpr uintptr_t offset_to_call_instruction = 4;
-    auto localPlayerCall = localPlayerIndexFn + offset_to_call_instruction;
-
-    // We only handle relative offsets, this needs an update if GetLocalPlayerIndex signature ever changes
-    Assert(*reinterpret_cast<uint8_t*>(localPlayerCall) == 0xE8);
-    auto localPlayerOffset = *reinterpret_cast<int32_t*>(localPlayerCall + 1);
-
-    s_RawFunctions[(int)HookFunc::C_BasePlayer_GetLocalPlayer] =
-        reinterpret_cast<void*>(localPlayerCall + localPlayerOffset + 5);
-}
-
 void HookManager::FindFunc_CNewParticleEffect_SetDormant()
 {
-    // Same deal as C_BasePlayer::GetLocalPlayer -- the function is too short to signature scan for. We calculate it
-    // by it's only usage instead.
+    // Too short to signature scan for -- find a usage and calculate its address from there.
     auto ownerSetDormantToFn = reinterpret_cast<uintptr_t>(GetRawFunc<HookFunc::CParticleProperty_OwnerSetDormantTo>());
     if (!ownerSetDormantToFn)
         return;
@@ -335,7 +314,6 @@ void HookManager::InitRawFunctionsList()
     FindFunc<HookFunc::C_BaseAnimating_GetSequenceActivity>(
         "\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x8B\xDA\x48\x8B\xF9\x83\xFA\xFF\x74", "xxxxxxxxxxxxxxxxxxx");
 
-    FindFunc_C_BasePlayer_GetLocalPlayer();
     FindFunc_CNewParticleEffect_SetDormant();
 }
 

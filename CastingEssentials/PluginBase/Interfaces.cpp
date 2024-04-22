@@ -213,21 +213,6 @@ HLTVCameraOverride* Interfaces::GetHLTVCamera()
     return (HLTVCameraOverride*)s_HLTVCamera;
 }
 
-C_BasePlayer*& Interfaces::GetLocalPlayer()
-{
-    static C_BasePlayer* s_LocalPlayer = nullptr;
-    if (!s_LocalPlayer)
-    {
-        typedef C_BasePlayer* (*C_BasePlayer_GetLocalPlayer)();
-        auto localPlayerFn = reinterpret_cast<C_BasePlayer_GetLocalPlayer>(
-            HookManager::GetRawFunc<HookFunc::C_BasePlayer_GetLocalPlayer>());
-
-        s_LocalPlayer = localPlayerFn();
-    }
-
-    return s_LocalPlayer;
-}
-
 cmdalias_t** Interfaces::GetCmdAliases()
 {
     static cmdalias_t** s_CmdAliases = nullptr;

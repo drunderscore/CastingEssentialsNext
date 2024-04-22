@@ -88,7 +88,6 @@ private:
     static void InitRawFunctionsList();
     template<HookFunc fn>
     static void FindFunc(const char* signature, const char* mask, int offset = 0, const char* module = "client");
-    static void FindFunc_C_BasePlayer_GetLocalPlayer();
     static void FindFunc_CNewParticleEffect_SetDormant();
 
     void IngameStateChanged(bool inGame);

@@ -196,10 +196,7 @@ void HitEvents::FireGameEventOverride(CDamageAccountPanel* pThis, IGameEvent* ev
         if (!specTarget || specTarget->GetUserID() != inflictor)
             return;
 
-        auto localPlayerEnt = C_BasePlayer::GetLocalPlayer();
-        Assert(localPlayerEnt->IsPlayer());
-
-        const auto lifeStatePusher = CreateVariablePusher<char>(localPlayerEnt->m_lifeState, LIFE_ALIVE);
+        const auto lifeStatePusher = CreateVariablePusher<char>(localPlayer->GetBasePlayer()->m_lifeState, LIFE_ALIVE);
         const auto tracelineOverridePusher =
             CreateVariablePusher(m_OverrideUTILTraceline, !ce_hitevents_dmgnumbers_los.GetBool());
 
