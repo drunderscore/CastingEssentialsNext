@@ -31,6 +31,8 @@ public:
     static constexpr __forceinline const char* GetModuleName() { return "Evil HUD Modifications"; }
 
     static vgui::VPANEL GetSpecGUI();
+    static vgui::VPANEL GetSpectatorTargetID();
+
     static Player* GetPlayerFromPanel(vgui::EditablePanel* playerPanel);
 
     // Like normal FindChildByName, but doesn't care about the fact we're in a different module.
@@ -212,11 +214,18 @@ private:
         TFClassType m_LastClassChangedClass;
     };
 
+    ConVar ce_hud_statistics_enabled;
+    ConVar ce_hud_statistics_target_id_enabled;
+
     static const char* GetStatusEffectFormatString(StatusEffect effect);
     static StatusEffect GetStatusEffect(const Player& player);
 
     static constexpr const char WEAPON_CHARGE_AMOUNT[] = "weaponchargeamount";
     static constexpr const char WEAPON_CHARGE_NAME[] = "weaponchargename";
+
+    static constexpr auto STATISTIC_KILLS = "statistickills";
+    static constexpr auto STATISTIC_ASSISTS = "statisticassists";
+    static constexpr auto STATISTIC_DEATHS = "statisticdeaths";
 
     // Static, because this is only used in GetPlayerFromPanel and we don't want to require
     // that HUDHacking module was loaded successfully just to use this completely independent function.
@@ -224,12 +233,14 @@ private:
 
     void OnTick(bool inGame) override;
     void UpdatePlayerPanels();
+    void UpdateSpectatorTargetID(bool enabled);
     static void ForwardPlayerPanelBorder(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel);
     static void UpdatePlayerHealth(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player);
     void UpdateStatusEffect(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player);
     void UpdateChargeBar(bool enabled, vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel,
                          Player& player) const;
     void UpdateClassChangeAnimations(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, Player& player);
+    void UpdateStatistics(bool enabled, vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, Player&);
 
     bool GetChargeBarData(Player& player, ChargeBarType& type, float& charge) const;
     void CheckItemForCharge(Player& player, const IClientNetworkable& playerNetworkable, const IClientNetworkable& item,
@@ -244,6 +255,8 @@ private:
     vgui::Panel* FindChildByNameOverride(vgui::Panel* pThis, const char* name, bool recurseDown);
 
     static vgui::AnimationController* GetAnimationController();
+
+    static vgui::VPANEL FindRootPanelByName(std::string_view);
 
     static EntityOffset<float> s_RageMeter;
     static EntityOffset<float> s_EnergyDrinkMeter;
@@ -260,4 +273,8 @@ private:
     static EntityTypeChecker s_WearableShieldType;
     static EntityTypeChecker s_RazorbackType;
     static EntityOffset<float> s_CleanersCarbineCharge;
+
+    static EntityOffset<int> s_LocalPlayerScoringKills;
+    static EntityOffset<int> s_LocalPlayerScoringKillAssists;
+    static EntityOffset<int> s_LocalPlayerScoringDeaths;
 };
