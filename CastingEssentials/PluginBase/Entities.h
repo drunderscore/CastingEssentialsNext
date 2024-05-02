@@ -58,6 +58,10 @@ public:
     static EntityTypeChecker GetTypeChecker(const char* type);
     static EntityTypeChecker GetTypeChecker(const ClientClass* cc);
     static EntityTypeChecker GetTypeChecker(const RecvTable* cc);
+    static EntityTypeChecker GetTypeChecker(const std::set<const RecvTable*>& validRecvTables)
+    {
+        return EntityTypeChecker(validRecvTables);
+    }
 
     static ClientClass* GetClientClass(const char* className);
     static RecvProp* FindRecvProp(const char* className, const char* propName, bool recursive = true);

@@ -36,6 +36,7 @@ MODULE_REGISTER(Graphics);
 
 EntityOffset<EHANDLE> Graphics::s_MoveParent;
 EntityTypeChecker Graphics::s_TFViewModelType;
+EntityTypeChecker Graphics::s_BuildingType;
 
 static constexpr auto STENCIL_INDEX_MASK = 0xFC;
 
@@ -72,6 +73,12 @@ Graphics::Graphics()
       ce_outlines_players_override_blue(
           "ce_outlines_players_override_blue", "", FCVAR_NONE,
           "Override color for blue players. [0, 255], format is \"<red> <green> <blue> <alpha>\"."),
+      ce_outlines_buildings_override_red(
+          "ce_outlines_buildings_override_red", "", FCVAR_NONE,
+          "Override color for red buildings. [0, 255], format is \"<red> <green> <blue> <alpha>\"."),
+      ce_outlines_buildings_override_blue(
+          "ce_outlines_buildings_override_blue", "", FCVAR_NONE,
+          "Override color for blue buildings. [0, 255], format is \"<red> <green> <blue> <alpha>\"."),
       ce_outlines_blur("ce_outlines_blur", "0", FCVAR_NONE, "Amount of blur to apply to the outlines. <1 to disable.",
                        true, 0, false, 0),
       ce_outlines_expand("ce_outlines_expand", "2.5", FCVAR_NONE, "Radius of the outline effect."),
@@ -691,6 +698,12 @@ void Graphics::BuildExtraGlowData(CGlowObjectManager* glowMgr, bool& anyAlways, 
     Vector redOverride = ColorToVector(ColorFromConVar(ce_outlines_players_override_red, &hasRedOverride));
     Vector blueOverride = ColorToVector(ColorFromConVar(ce_outlines_players_override_blue, &hasBlueOverride));
 
+    bool hasRedBuildingOverride, hasBlueBuildingOverride;
+    Vector redBuildingOverride =
+        ColorToVector(ColorFromConVar(ce_outlines_buildings_override_red, &hasRedBuildingOverride));
+    Vector blueBuildingOverride =
+        ColorToVector(ColorFromConVar(ce_outlines_buildings_override_blue, &hasBlueBuildingOverride));
+
     uint8_t stencilIndex = 0;
 
     const bool infillsEnable = ce_infills_enable.GetBool();
@@ -865,6 +878,21 @@ void Graphics::BuildExtraGlowData(CGlowObjectManager* glowMgr, bool& anyAlways, 
                         currentExtra.m_ShouldOverrideGlowColor = true;
                     }
                 }
+            }
+        }
+        else if (s_BuildingType.Match(current.m_hEntity->GetClientNetworkable()))
+        {
+            auto team = Entities::GetEntityTeamSafe(current.m_hEntity->GetClientNetworkable());
+
+            if (team == TFTeam::Red && hasRedBuildingOverride)
+            {
+                currentExtra.m_GlowColorOverride = redBuildingOverride;
+                currentExtra.m_ShouldOverrideGlowColor = true;
+            }
+            else if (team == TFTeam::Blue && hasBlueBuildingOverride)
+            {
+                currentExtra.m_GlowColorOverride = blueBuildingOverride;
+                currentExtra.m_ShouldOverrideGlowColor = true;
             }
         }
     }
@@ -1639,6 +1667,11 @@ bool Graphics::CheckDependencies()
     }
 
     s_TFViewModelType = Entities::GetTypeChecker("CTFViewModel");
+    s_BuildingType = Entities::GetTypeChecker(std::set<const RecvTable*>{
+        Entities::GetClientClass("CObjectSentrygun")->m_pRecvTable,
+        Entities::GetClientClass("CObjectDispenser")->m_pRecvTable,
+        Entities::GetClientClass("CObjectTeleporter")->m_pRecvTable,
+    });
 
     return true;
 }

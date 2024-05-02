@@ -48,6 +48,8 @@ private:
 
     ConVar ce_outlines_players_override_red;
     ConVar ce_outlines_players_override_blue;
+    ConVar ce_outlines_buildings_override_red;
+    ConVar ce_outlines_buildings_override_blue;
     ConVar ce_outlines_blur;
     ConVar ce_outlines_expand;
     ConVar ce_outlines_debug_stencil_out;
@@ -204,4 +206,5 @@ private:
 
     static EntityOffset<CHandle<C_BaseEntity>> s_MoveParent;
     static EntityTypeChecker s_TFViewModelType;
+    static EntityTypeChecker s_BuildingType;
 };
