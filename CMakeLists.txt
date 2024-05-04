@@ -20,6 +20,7 @@ add_library(CastingEssentials SHARED
     ${CMAKE_BINARY_DIR}/version.rc
     ${CMAKE_BINARY_DIR}/GitVersion.cpp
 
+    CastingEssentials/Controls/ImageProgressBar.cpp
     CastingEssentials/Controls/VariableLabel.cpp
     CastingEssentials/Hooking/IBaseHook.cpp
     CastingEssentials/Hooking/IGroupHook.cpp
