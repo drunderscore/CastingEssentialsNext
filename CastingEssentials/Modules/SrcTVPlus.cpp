@@ -1,6 +1,5 @@
 #include <Modules/SrcTVPlus.h>
 #include <PluginBase/Interfaces.h>
-#include <PluginBase/Player.h>
 #include <PluginBase/VariablePusher.h>
 #include <client/c_baseentity.h>
 #include <client/c_baseplayer.h>
@@ -33,7 +32,7 @@ static std::map<int, int> g_SeenEntities; // Entity ID + serial -> number of tim
 void SrcTVPlus::DetectorProxy(const CRecvProxyData* pData, void* pStruct, void* pOut)
 {
     auto ent = static_cast<C_BasePlayer*>(pStruct);
-    if (ent != Player::GetLocalPlayer()->GetBasePlayer())
+    if (pData->m_ObjectID != Interfaces::GetEngineClient()->GetLocalPlayer())
     {
         auto id = ent->GetRefEHandle().ToInt();
         if (++g_SeenEntities[id] >= 10)
