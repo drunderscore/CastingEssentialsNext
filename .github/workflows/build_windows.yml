@@ -47,3 +47,19 @@ jobs:
         path: |
           ${{ steps.strings.outputs.build-output-dir }}/CastingEssentials.dll
           ${{ steps.strings.outputs.build-output-dir }}/CastingEssentials.pdb
+
+    # This is used by Flask for automatic error reporting.
+    - name: Setup Sentry CLI
+      uses: mathieu-bour/setup-sentry-cli@v1
+      if: github.event_name == 'push' && github.ref_name == 'master'
+      with:
+        version: 2.21.2
+        token: ${{ SECRETS.SENTRY_TOKEN }} # from GitHub secrets
+        organization: the-james-multiverse
+        project: flask
+
+    - name: Upload Debug Symbols to Sentry
+      if: github.event_name == 'push' && github.ref_name == 'master'
+      run: |
+        sentry-cli debug-files check ${{ steps.strings.outputs.build-output-dir }}/CastingEssentials.pdb
+        sentry-cli debug-files upload --include-sources ${{ steps.strings.outputs.build-output-dir }}/CastingEssentials.pdb
