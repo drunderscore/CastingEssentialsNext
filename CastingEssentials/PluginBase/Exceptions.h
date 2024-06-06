@@ -1,5 +1,7 @@
 #pragma once
 
+#include <exception>
+#include <stdexcept>
 #include <string>
 
 class invalid_class_prop : public std::exception

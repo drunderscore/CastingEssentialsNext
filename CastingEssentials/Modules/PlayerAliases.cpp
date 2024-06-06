@@ -189,33 +189,36 @@ void PlayerAliases::AddPlayerAlias(const CCommand& brokenCommand)
 
 void PlayerAliases::RemovePlayerAlias(const CCommand& brokenCommand)
 {
-    CCommand command;
-    if (!ReparseForSteamIDs(brokenCommand, command))
-        return;
-
-    if (command.ArgC() != 2)
-        goto Usage;
-
-    const CSteamID id(command.Arg(1));
-    if (!id.IsValid())
     {
-        Warning("Failed to parse steamid \"%s\"!\n", command.Arg(1));
-        goto Usage;
-    }
-
-    // Find and remove existing
-    {
-        const auto& found = m_CustomAliases.find(id);
-        if (found != m_CustomAliases.end())
-            m_CustomAliases.erase(found);
-        else
-        {
-            Warning("Unable to find existing alias for steamid \"%s\"!\n", command.Arg(1));
+        CCommand command;
+        if (!ReparseForSteamIDs(brokenCommand, command))
             return;
+
+        if (command.ArgC() != 2)
+            goto Usage;
+
+        const CSteamID id(command.Arg(1));
+        if (!id.IsValid())
+        {
+            Warning("Failed to parse steamid \"%s\"!\n", command.Arg(1));
+            goto Usage;
         }
+
+        // Find and remove existing
+        {
+            const auto& found = m_CustomAliases.find(id);
+            if (found != m_CustomAliases.end())
+                m_CustomAliases.erase(found);
+            else
+            {
+                Warning("Unable to find existing alias for steamid \"%s\"!\n", command.Arg(1));
+                return;
+            }
+        }
+
+        return;
     }
 
-    return;
 Usage:
     Warning("Usage: %s <steam id>\n", ce_playeraliases_remove.GetName());
 }

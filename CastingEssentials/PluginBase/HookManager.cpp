@@ -351,8 +351,8 @@ template<HookFunc fn, class... Args>
 void HookManager::InitHook(Args&&... args)
 {
     Assert(!m_Hooks[(int)fn]);
-    m_Hooks[(int)fn] = std::make_unique<HookFuncType<fn>::Hook>();
-    GetHook<fn>()->AttachHook(std::make_shared<HookFuncType<fn>::Hook::Inner>(args...));
+    m_Hooks[(int)fn] = std::make_unique<typename HookFuncType<fn>::Hook>();
+    GetHook<fn>()->AttachHook(std::make_shared<typename HookFuncType<fn>::Hook::Inner>(args...));
 }
 
 template<HookFunc fn>

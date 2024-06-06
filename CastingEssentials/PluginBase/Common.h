@@ -1,5 +1,6 @@
 #pragma once
 #include <Color.h>
+#include <cmath>
 #include <dbg.h>
 #include <mathlib/mathlib.h>
 #include <string>

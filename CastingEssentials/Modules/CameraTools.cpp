@@ -447,59 +447,61 @@ void CameraTools::TPLockBoneUpdated(ConVar* cv)
 
 void CameraTools::SpecClass(const CCommand& command)
 {
-    // Usage: <team> <class> [classIndex]
-    if (command.ArgC() < 3 || command.ArgC() > 4)
     {
-        PluginWarning("%s: Expected either 2 or 3 arguments\n", command.Arg(0));
-        goto Usage;
-    }
+        // Usage: <team> <class> [classIndex]
+        if (command.ArgC() < 3 || command.ArgC() > 4)
+        {
+            PluginWarning("%s: Expected either 2 or 3 arguments\n", command.Arg(0));
+            goto Usage;
+        }
 
-    TFTeam team;
-    if (!strnicmp(command.Arg(1), "blu", 3))
-        team = TFTeam::Blue;
-    else if (!strnicmp(command.Arg(1), "red", 3))
-        team = TFTeam::Red;
-    else
-    {
-        PluginWarning("%s: Unknown team \"%s\"\n", command.Arg(0), command.Arg(1));
-        goto Usage;
-    }
+        TFTeam team;
+        if (!strnicmp(command.Arg(1), "blu", 3))
+            team = TFTeam::Blue;
+        else if (!strnicmp(command.Arg(1), "red", 3))
+            team = TFTeam::Red;
+        else
+        {
+            PluginWarning("%s: Unknown team \"%s\"\n", command.Arg(0), command.Arg(1));
+            goto Usage;
+        }
 
-    TFClassType playerClass;
-    if (!stricmp(command.Arg(2), "scout"))
-        playerClass = TFClassType::Scout;
-    else if (!stricmp(command.Arg(2), "soldier") || !stricmp(command.Arg(2), "solly"))
-        playerClass = TFClassType::Soldier;
-    else if (!stricmp(command.Arg(2), "pyro"))
-        playerClass = TFClassType::Pyro;
-    else if (!strnicmp(command.Arg(2), "demo", 4))
-        playerClass = TFClassType::DemoMan;
-    else if (!strnicmp(command.Arg(2), "heavy", 5) || !stricmp(command.Arg(2), "hoovy") ||
-             !stricmp(command.Arg(2), "pootis"))
-        playerClass = TFClassType::Heavy;
-    else if (!stricmp(command.Arg(2), "engineer") || !stricmp(command.Arg(2), "engie"))
-        playerClass = TFClassType::Engineer;
-    else if (!stricmp(command.Arg(2), "medic"))
-        playerClass = TFClassType::Medic;
-    else if (!stricmp(command.Arg(2), "sniper"))
-        playerClass = TFClassType::Sniper;
-    else if (!stricmp(command.Arg(2), "spy") | !stricmp(command.Arg(2), "sphee"))
-        playerClass = TFClassType::Spy;
-    else
-    {
-        PluginWarning("%s: Unknown class \"%s\"\n", command.Arg(0), command.Arg(2));
-        goto Usage;
-    }
+        TFClassType playerClass;
+        if (!stricmp(command.Arg(2), "scout"))
+            playerClass = TFClassType::Scout;
+        else if (!stricmp(command.Arg(2), "soldier") || !stricmp(command.Arg(2), "solly"))
+            playerClass = TFClassType::Soldier;
+        else if (!stricmp(command.Arg(2), "pyro"))
+            playerClass = TFClassType::Pyro;
+        else if (!strnicmp(command.Arg(2), "demo", 4))
+            playerClass = TFClassType::DemoMan;
+        else if (!strnicmp(command.Arg(2), "heavy", 5) || !stricmp(command.Arg(2), "hoovy") ||
+                 !stricmp(command.Arg(2), "pootis"))
+            playerClass = TFClassType::Heavy;
+        else if (!stricmp(command.Arg(2), "engineer") || !stricmp(command.Arg(2), "engie"))
+            playerClass = TFClassType::Engineer;
+        else if (!stricmp(command.Arg(2), "medic"))
+            playerClass = TFClassType::Medic;
+        else if (!stricmp(command.Arg(2), "sniper"))
+            playerClass = TFClassType::Sniper;
+        else if (!stricmp(command.Arg(2), "spy") | !stricmp(command.Arg(2), "sphee"))
+            playerClass = TFClassType::Spy;
+        else
+        {
+            PluginWarning("%s: Unknown class \"%s\"\n", command.Arg(0), command.Arg(2));
+            goto Usage;
+        }
 
-    int classIndex = -1;
-    if (command.ArgC() > 3 && !TryParseInteger(command.Arg(3), classIndex))
-    {
-        PluginWarning("%s: class index \"%s\" is not an integer\n", command.Arg(0), command.Arg(3));
-        goto Usage;
-    }
+        int classIndex = -1;
+        if (command.ArgC() > 3 && !TryParseInteger(command.Arg(3), classIndex))
+        {
+            PluginWarning("%s: class index \"%s\" is not an integer\n", command.Arg(0), command.Arg(3));
+            goto Usage;
+        }
 
-    SpecClass(team, playerClass, classIndex);
-    return;
+        SpecClass(team, playerClass, classIndex);
+        return;
+    }
 
 Usage:
     PluginWarning("Usage: %s\n", ce_cameratools_spec_class.GetHelpText());
@@ -900,84 +902,85 @@ Usage:
 
 void CameraTools::SpecIndex(const CCommand& command)
 {
-    if (command.ArgC() != 3)
-        goto Usage;
-
-    TFTeam team;
-    if (tolower(command.Arg(1)[0]) == 'r')
-        team = TFTeam::Red;
-    else if (tolower(command.Arg(1)[0]) == 'b')
-        team = TFTeam::Blue;
-    else
-        goto Usage;
-
-    // Create an array of all our players on the specified team
-    Player* allPlayers[ABSOLUTE_PLAYER_LIMIT];
-    const auto endIter = std::copy_if(Player::Iterable().begin(), Player::Iterable().end(), allPlayers,
-                                      [team](const Player* player) { return player->GetTeam() == team; });
-
-    const auto playerCount = std::distance(std::begin(allPlayers), endIter);
-
-    char* endPtr;
-    const auto index = std::strtol(command.Arg(2), &endPtr, 0);
-    if (endPtr == command.Arg(2))
-        goto Usage; // Couldn't parse index
-
-    if (index < 0 || index >= playerCount)
     {
-        if (playerCount < 1)
-            PluginWarning("%s: No players on team %s\n", command.Arg(0), command.Arg(1));
-        else
-            PluginWarning("Specified index \"%s\" for %s, but valid indices for team %s were [0, %i]\n", command.Arg(2),
-                          command.Arg(0), command.Arg(1), playerCount - 1);
+        if (command.ArgC() != 3)
+            goto Usage;
 
+        TFTeam team;
+        if (tolower(command.Arg(1)[0]) == 'r')
+            team = TFTeam::Red;
+        else if (tolower(command.Arg(1)[0]) == 'b')
+            team = TFTeam::Blue;
+        else
+            goto Usage;
+
+        // Create an array of all our players on the specified team
+        Player* allPlayers[ABSOLUTE_PLAYER_LIMIT];
+        const auto endIter = std::copy_if(Player::Iterable().begin(), Player::Iterable().end(), allPlayers,
+                                          [team](const Player* player) { return player->GetTeam() == team; });
+
+        const auto playerCount = std::distance(std::begin(allPlayers), endIter);
+
+        char* endPtr;
+        const auto index = std::strtol(command.Arg(2), &endPtr, 0);
+        if (endPtr == command.Arg(2))
+            goto Usage; // Couldn't parse index
+
+        if (index < 0 || index >= playerCount)
+        {
+            if (playerCount < 1)
+                PluginWarning("%s: No players on team %s\n", command.Arg(0), command.Arg(1));
+            else
+                PluginWarning("Specified index \"%s\" for %s, but valid indices for team %s were [0, %i]\n",
+                              command.Arg(2), command.Arg(0), command.Arg(1), playerCount - 1);
+
+            return;
+        }
+
+        // Sort by class, then by userid
+        std::sort(std::begin(allPlayers), endIter, [](const Player* p1, const Player* p2) {
+            // Convert internal classes to actual game class order
+            static const auto GameClassNum = [](TFClassType codeClass) {
+                switch (codeClass)
+                {
+                    case TFClassType::Scout:
+                        return 1;
+                    case TFClassType::Soldier:
+                        return 2;
+                    case TFClassType::Pyro:
+                        return 3;
+                    case TFClassType::DemoMan:
+                        return 4;
+                    case TFClassType::Heavy:
+                        return 5;
+                    case TFClassType::Engineer:
+                        return 6;
+                    case TFClassType::Medic:
+                        return 7;
+                    case TFClassType::Sniper:
+                        return 8;
+                    case TFClassType::Spy:
+                        return 9;
+
+                    default:
+                        return 0;
+                }
+            };
+
+            const auto class1 = GameClassNum(p1->GetClass());
+            const auto class2 = GameClassNum(p2->GetClass());
+
+            if (class1 < class2)
+                return true;
+            else if (class1 > class2)
+                return false;
+            else
+                return p1->entindex() < p2->entindex(); // Classes identical, sort by entindex
+        });
+
+        SpecPlayer(allPlayers[index]->entindex());
         return;
     }
-
-    // Sort by class, then by userid
-    std::sort(std::begin(allPlayers), endIter, [](const Player* p1, const Player* p2) {
-        // Convert internal classes to actual game class order
-        static const auto GameClassNum = [](TFClassType codeClass) {
-            switch (codeClass)
-            {
-                case TFClassType::Scout:
-                    return 1;
-                case TFClassType::Soldier:
-                    return 2;
-                case TFClassType::Pyro:
-                    return 3;
-                case TFClassType::DemoMan:
-                    return 4;
-                case TFClassType::Heavy:
-                    return 5;
-                case TFClassType::Engineer:
-                    return 6;
-                case TFClassType::Medic:
-                    return 7;
-                case TFClassType::Sniper:
-                    return 8;
-                case TFClassType::Spy:
-                    return 9;
-
-                default:
-                    return 0;
-            }
-        };
-
-        const auto class1 = GameClassNum(p1->GetClass());
-        const auto class2 = GameClassNum(p2->GetClass());
-
-        if (class1 < class2)
-            return true;
-        else if (class1 > class2)
-            return false;
-        else
-            return p1->entindex() < p2->entindex(); // Classes identical, sort by entindex
-    });
-
-    SpecPlayer(allPlayers[index]->entindex());
-    return;
-
 Usage:
     PluginWarning("Usage: %s <red/blue> <index>\n", command.Arg(0));
 }

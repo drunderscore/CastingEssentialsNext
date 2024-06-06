@@ -10,9 +10,9 @@ class CRefPtrFix : public CRefPtr<T>
 public:
     CRefPtrFix() = default;
     CRefPtrFix(T* pInit) : BaseClass(InlineAddRef(pInit)) {}
-    CRefPtrFix(const CRefPtr<T>& from) : BaseClass(InlineAddRef(pInit)) {}
+    CRefPtrFix(const CRefPtr<T>& from) : BaseClass(InlineAddRef(from)) {}
 
-    T* operator=(T* p) { AssignAddRef(p); }
+    T* operator=(T* p) { this->AssignAddRef(p); }
 
 private:
     int operator=(int i)

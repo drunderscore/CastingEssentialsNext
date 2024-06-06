@@ -41,13 +41,13 @@ protected:
     BaseGroupClassHook() = delete;
     BaseGroupClassHook(const SelfType& other) = delete;
 
-    static SelfType* This() { return assert_cast<SelfType*>(BaseThis()); }
+    static SelfType* This() { return assert_cast<SelfType*>(BaseType::BaseThis()); }
 
     static Internal::LocalDetourFnPtr<Type, RetVal, Args...> LocalDetourFn()
     {
         return [](Type* pThis, Args... args) {
             Assert(This()->GetInstance() == pThis);
-            return HookFunctionsInvoker<RetVal>::Invoke(args...);
+            return BaseType::template HookFunctionsInvoker<RetVal>::Invoke(args...);
         };
     }
     static Internal::LocalVaArgsFnPtr<Type, RetVal, Args...> LocalVaArgsDetourFn()
@@ -80,7 +80,7 @@ protected:
             *fmt = (char*)formatted.c_str();
 
             // Now run all the hooks
-            return HookFunctionsInvoker<RetVal>::Invoke(args...);
+            return BaseType::template HookFunctionsInvoker<RetVal>::Invoke(args...);
         };
     }
 
@@ -98,7 +98,7 @@ protected:
             return func(instance, args...);
         };
 
-        m_PatchFunction = std::bind(patchFn, std::placeholders::_1, m_Instance, std::placeholders::_2);
+        this->m_PatchFunction = std::bind(patchFn, std::placeholders::_1, m_Instance, std::placeholders::_2);
     }
 
     template<std::size_t... Is>
@@ -107,11 +107,11 @@ protected:
         Assert(GetType() == HookType::Class || GetType() == HookType::Virtual);
 
         // Make sure we're initialized so we don't have any nasty race conditions
-        InitHook();
+        this->InitHook();
 
-        if (m_BaseHook)
+        if (this->m_BaseHook)
         {
-            OriginalFnType originalFnPtr = reinterpret_cast<OriginalFnType>(m_BaseHook->GetOriginalFunction());
+            OriginalFnType originalFnPtr = reinterpret_cast<OriginalFnType>(this->m_BaseHook->GetOriginalFunction());
             auto patch = [](OriginalFnType oFn, Args... args) { return oFn(This()->m_Instance, args...); };
             return std::bind(patch, originalFnPtr, (std::_Ph<(int)(Is + 1)>{})...);
         }
@@ -146,7 +146,7 @@ public:
     }
 
 private:
-    typename BaseType::DetourFnType DefaultDetourFn() override { return LocalDetourFn(); }
+    typename BaseType::DetourFnType DefaultDetourFn() override { return this->LocalDetourFn(); }
 };
 
 #if 0

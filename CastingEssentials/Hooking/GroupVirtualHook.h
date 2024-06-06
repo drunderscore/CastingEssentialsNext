@@ -19,7 +19,7 @@ public:
     typedef MemFnType MemFnType;
 
     BaseGroupVirtualHook(Type* instance, MemFnType fn, DetourFnType detour = nullptr)
-        : BaseType((ConstructorParam1*)instance, (ConstructorParam2*)detour)
+        : BaseType((typename BaseType::ConstructorParam1*)instance, (typename BaseType::ConstructorParam2*)detour)
     {
         m_MemberFunction = fn;
         Assert(m_MemberFunction);
@@ -36,20 +36,21 @@ private:
     {
         Assert(GetType() == HookType::Virtual);
 
-        if (!m_DetourFunction)
-            m_DetourFunction = (DetourFnType)DefaultDetourFn();
+        if (!this->m_DetourFunction)
+            this->m_DetourFunction = (DetourFnType)this->DefaultDetourFn();
 
         Assert(m_Instance);
         Assert(m_MemberFunction);
         Assert(m_DetourFunction);
 
-        if (!m_BaseHook)
+        if (!this->m_BaseHook)
         {
-            std::lock_guard<std::recursive_mutex> lock(m_BaseHookMutex);
-            if (!m_BaseHook)
+            std::lock_guard<std::recursive_mutex> lock(this->m_BaseHookMutex);
+            if (!this->m_BaseHook)
             {
-                m_BaseHook = CreateVTableSwapHook(m_Instance, m_DetourFunction, VTableOffset(m_MemberFunction));
-                m_BaseHook->Hook();
+                this->m_BaseHook =
+                    CreateVTableSwapHook(this->m_Instance, this->m_DetourFunction, VTableOffset(m_MemberFunction));
+                this->m_BaseHook->Hook();
             }
         }
     }
@@ -84,7 +85,7 @@ public:
     }
     GroupVirtualHook(Type* instance, RetVal (Type::*fn)(Args...) const,
                      typename BaseType::DetourFnType detour = nullptr)
-        : BaseType(instance, reinterpret_cast<MemFnType>(fn), detour)
+        : BaseType(instance, reinterpret_cast<typename BaseType::MemFnType>(fn), detour)
     {
     }
 
@@ -92,7 +93,7 @@ private:
     GroupVirtualHook() = delete;
     GroupVirtualHook(const SelfType& other) = delete;
 
-    typename BaseType::DetourFnType DefaultDetourFn() override { return LocalDetourFn(); }
+    typename BaseType::DetourFnType DefaultDetourFn() override { return this->LocalDetourFn(); }
 };
 
 // Variable arguments version
@@ -116,7 +117,7 @@ public:
     }
     GroupVirtualHook(Type* instance, RetVal (Type::*fn)(Args..., ...) const,
                      typename BaseType::DetourFnType detour = nullptr)
-        : SelfType(instance, reinterpret_cast<MemFnType>(fn), detour)
+        : SelfType(instance, reinterpret_cast<typename BaseType::MemFnType>(fn), detour)
     {
     }
 
@@ -124,6 +125,6 @@ private:
     GroupVirtualHook() = delete;
     GroupVirtualHook(const SelfType& other) = delete;
 
-    typename BaseType::DetourFnType DefaultDetourFn() override { return LocalVaArgsDetourFn(); }
+    typename BaseType::DetourFnType DefaultDetourFn() override { return this->LocalVaArgsDetourFn(); }
 };
 }

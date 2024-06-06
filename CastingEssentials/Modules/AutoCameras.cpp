@@ -828,131 +828,133 @@ void AutoCameras::CycleCamera(const CCommand& args)
     if (args.ArgC() < 2 || args.ArgC() > 3)
         goto Usage;
 
-    const char* const groupName = args.ArgC() > 2 ? args.Arg(2) : "";
-    auto camGroup = FindCameraGroup(groupName);
-    if (!camGroup)
     {
-        Warning("%s: Unable to find group with name \"%s\"!\n", args.Arg(0), groupName);
+        const char* const groupName = args.ArgC() > 2 ? args.Arg(2) : "";
+        auto camGroup = FindCameraGroup(groupName);
+        if (!camGroup)
+        {
+            Warning("%s: Unable to find group with name \"%s\"!\n", args.Arg(0), groupName);
+            return;
+        }
+
+        enum Direction
+        {
+            NEXT,
+            PREV,
+        } dir;
+
+        // Get direction from arguments
+        if (!strnicmp(args.Arg(1), "next", 4))
+            dir = NEXT;
+        else if (!strnicmp(args.Arg(1), "prev", 4))
+            dir = PREV;
+        else
+            goto Usage;
+
+        // Get current camera origin
+        const Vector camOrigin;
+        {
+            QAngle dummy;
+            Assert(CameraState::GetModule());
+            if (CameraState::GetModule())
+                CameraState::GetModule()->GetThisFramePluginView(const_cast<Vector&>(camOrigin), dummy);
+        }
+
+        // Check if we're already at a camera, in which case we just operate by file (group) order
+        {
+            const auto compareFunc = [&](const Camera* c) { return c->m_Pos.DistToSqr(camOrigin) < 100; };
+
+            if (dir == NEXT)
+            {
+                auto found = std::find_if(camGroup->m_Cameras.begin(), camGroup->m_Cameras.end(), compareFunc);
+                if (found != camGroup->m_Cameras.end())
+                {
+                    auto next = std::next(found);
+                    if (next == camGroup->m_Cameras.end())
+                        return GotoCamera(**camGroup->m_Cameras.begin());
+                    else
+                        return GotoCamera(**next);
+                }
+            }
+            else
+            {
+                auto found = std::find_if(camGroup->m_Cameras.rbegin(), camGroup->m_Cameras.rend(), compareFunc);
+                if (found != camGroup->m_Cameras.rend())
+                {
+                    auto next = std::next(found);
+                    if (next == camGroup->m_Cameras.rend())
+                        return GotoCamera(**camGroup->m_Cameras.rbegin());
+                    else
+                        return GotoCamera(**next);
+                }
+            }
+        }
+
+        const float aspectRatio = 16.0 / 9.0; // Just blindly assume 16:9 for now
+
+        const Camera* bestCameras[1];
+
+        const Vector boxMins(camOrigin - Vector(0.5));
+        const Vector boxMaxs(camOrigin + Vector(0.5));
+
+        const ObserverMode gotoMode = (ObserverMode)ce_autocamera_goto_mode.GetInt();
+
+        auto lastBest = std::partial_sort_copy(
+            camGroup->m_Cameras.begin(), camGroup->m_Cameras.end(), std::begin(bestCameras), std::end(bestCameras),
+            [&](const Camera* c1, const Camera* c2) {
+                const auto dist1 = c1->m_Pos.DistToSqr(camOrigin);
+                const auto dist2 = c2->m_Pos.DistToSqr(camOrigin);
+
+                // Check if either of the cameras have our current position within their frustum
+                {
+                    Frustum_t frustum1, frustum2;
+                    GeneratePerspectiveFrustum(c1->m_Pos, c1->m_DefaultAngle, 1, 100000, GetCameraFOV(*c1, gotoMode),
+                                               aspectRatio, frustum1);
+                    GeneratePerspectiveFrustum(c2->m_Pos, c2->m_DefaultAngle, 1, 100000, GetCameraFOV(*c2, gotoMode),
+                                               aspectRatio, frustum2);
+
+                    const bool inFrustum1 = R_CullBox(boxMins, boxMaxs, frustum1);
+                    const bool inFrustum2 = R_CullBox(boxMins, boxMaxs, frustum2);
+
+                    if (inFrustum1 && !inFrustum2)
+                        return true;
+                    else if (!inFrustum1 && inFrustum2)
+                        return false;
+                    else if (!inFrustum1 && !inFrustum2)
+                        return dist1 < dist2;
+                }
+
+                // Check if either of the cameras have LOS to the current point
+                {
+                    CTraceFilterNoNPCsOrPlayer noPlayers(nullptr, COLLISION_GROUP_NONE);
+                    trace_t tr1, tr2;
+                    UTIL_TraceLine(c1->m_Pos, camOrigin, MASK_OPAQUE, &noPlayers, &tr1);
+                    UTIL_TraceLine(c2->m_Pos, camOrigin, MASK_OPAQUE, &noPlayers, &tr2);
+
+                    const bool hasLOS1 = tr1.fraction >= 1;
+                    const bool hasLOS2 = tr2.fraction >= 1;
+
+                    if (hasLOS1 && !hasLOS2)
+                        return true;
+                    else if (!hasLOS1 && hasLOS2)
+                        return false;
+                    else if (!hasLOS1 && !hasLOS2)
+                        return dist1 < dist2;
+                }
+
+                // Whoever is closest
+                return dist1 < dist2;
+            });
+
+        if (lastBest == std::begin(bestCameras))
+            Warning("%s: Unable to navigate to a camera for some reason.\n", args.Arg(0));
+        else // if (dir == NEXT)
+            GotoCamera(*bestCameras[0]);
+        // else  // dir == PREV
+        //	GotoCamera(*bestCameras[1]);
+
         return;
     }
-
-    enum Direction
-    {
-        NEXT,
-        PREV,
-    } dir;
-
-    // Get direction from arguments
-    if (!strnicmp(args.Arg(1), "next", 4))
-        dir = NEXT;
-    else if (!strnicmp(args.Arg(1), "prev", 4))
-        dir = PREV;
-    else
-        goto Usage;
-
-    // Get current camera origin
-    const Vector camOrigin;
-    {
-        QAngle dummy;
-        Assert(CameraState::GetModule());
-        if (CameraState::GetModule())
-            CameraState::GetModule()->GetThisFramePluginView(const_cast<Vector&>(camOrigin), dummy);
-    }
-
-    // Check if we're already at a camera, in which case we just operate by file (group) order
-    {
-        const auto compareFunc = [&](const Camera* c) { return c->m_Pos.DistToSqr(camOrigin) < 100; };
-
-        if (dir == NEXT)
-        {
-            auto found = std::find_if(camGroup->m_Cameras.begin(), camGroup->m_Cameras.end(), compareFunc);
-            if (found != camGroup->m_Cameras.end())
-            {
-                auto next = std::next(found);
-                if (next == camGroup->m_Cameras.end())
-                    return GotoCamera(**camGroup->m_Cameras.begin());
-                else
-                    return GotoCamera(**next);
-            }
-        }
-        else
-        {
-            auto found = std::find_if(camGroup->m_Cameras.rbegin(), camGroup->m_Cameras.rend(), compareFunc);
-            if (found != camGroup->m_Cameras.rend())
-            {
-                auto next = std::next(found);
-                if (next == camGroup->m_Cameras.rend())
-                    return GotoCamera(**camGroup->m_Cameras.rbegin());
-                else
-                    return GotoCamera(**next);
-            }
-        }
-    }
-
-    const float aspectRatio = 16.0 / 9.0; // Just blindly assume 16:9 for now
-
-    const Camera* bestCameras[1];
-
-    const Vector boxMins(camOrigin - Vector(0.5));
-    const Vector boxMaxs(camOrigin + Vector(0.5));
-
-    const ObserverMode gotoMode = (ObserverMode)ce_autocamera_goto_mode.GetInt();
-
-    auto lastBest =
-        std::partial_sort_copy(camGroup->m_Cameras.begin(), camGroup->m_Cameras.end(), std::begin(bestCameras),
-                               std::end(bestCameras), [&](const Camera* c1, const Camera* c2) {
-                                   const auto dist1 = c1->m_Pos.DistToSqr(camOrigin);
-                                   const auto dist2 = c2->m_Pos.DistToSqr(camOrigin);
-
-                                   // Check if either of the cameras have our current position within their frustum
-                                   {
-                                       Frustum_t frustum1, frustum2;
-                                       GeneratePerspectiveFrustum(c1->m_Pos, c1->m_DefaultAngle, 1, 100000,
-                                                                  GetCameraFOV(*c1, gotoMode), aspectRatio, frustum1);
-                                       GeneratePerspectiveFrustum(c2->m_Pos, c2->m_DefaultAngle, 1, 100000,
-                                                                  GetCameraFOV(*c2, gotoMode), aspectRatio, frustum2);
-
-                                       const bool inFrustum1 = R_CullBox(boxMins, boxMaxs, frustum1);
-                                       const bool inFrustum2 = R_CullBox(boxMins, boxMaxs, frustum2);
-
-                                       if (inFrustum1 && !inFrustum2)
-                                           return true;
-                                       else if (!inFrustum1 && inFrustum2)
-                                           return false;
-                                       else if (!inFrustum1 && !inFrustum2)
-                                           return dist1 < dist2;
-                                   }
-
-                                   // Check if either of the cameras have LOS to the current point
-                                   {
-                                       CTraceFilterNoNPCsOrPlayer noPlayers(nullptr, COLLISION_GROUP_NONE);
-                                       trace_t tr1, tr2;
-                                       UTIL_TraceLine(c1->m_Pos, camOrigin, MASK_OPAQUE, &noPlayers, &tr1);
-                                       UTIL_TraceLine(c2->m_Pos, camOrigin, MASK_OPAQUE, &noPlayers, &tr2);
-
-                                       const bool hasLOS1 = tr1.fraction >= 1;
-                                       const bool hasLOS2 = tr2.fraction >= 1;
-
-                                       if (hasLOS1 && !hasLOS2)
-                                           return true;
-                                       else if (!hasLOS1 && hasLOS2)
-                                           return false;
-                                       else if (!hasLOS1 && !hasLOS2)
-                                           return dist1 < dist2;
-                                   }
-
-                                   // Whoever is closest
-                                   return dist1 < dist2;
-                               });
-
-    if (lastBest == std::begin(bestCameras))
-        Warning("%s: Unable to navigate to a camera for some reason.\n", args.Arg(0));
-    else // if (dir == NEXT)
-        GotoCamera(*bestCameras[0]);
-    // else  // dir == PREV
-    //	GotoCamera(*bestCameras[1]);
-
-    return;
 
 Usage:
     Warning("%s: Usage: %s <prev/next> [group]\n", args.Arg(0), args.Arg(0));

@@ -175,36 +175,38 @@ void ConsoleTools::UnhideAllCvars()
 
 void ConsoleTools::SetLimits(const CCommand& command)
 {
-    if (command.ArgC() != 4)
-        goto Usage;
-
-    ConVar* var;
-    if ((var = cvar->FindVar(command[1])) == nullptr)
     {
-        Warning("Unable to find cvar named \"%s\"\n", command[1]);
-        goto Usage;
-    }
-
-    std::optional<float> minMax[2];
-    for (int i = 0; i < 2; i++)
-    {
-        if (command[2 + i][0] == 'x' && command[2 + i][1] == '\0')
-            continue;
-        else if (command[2 + i][0] == '?' && command[2 + i][1] == '\0')
-        {
-            float val;
-            if ((i == 0 && var->GetMin(val)) || (i == 1 && var->GetMax(val)))
-                minMax[i] = val;
-        }
-        else if (float parsed; TryParseFloat(command[2 + i], parsed))
-            minMax[i] = parsed;
-        else
+        if (command.ArgC() != 4)
             goto Usage;
-    }
 
-    CCvar::SetMin(var, minMax[0]);
-    CCvar::SetMax(var, minMax[1]);
-    return;
+        ConVar* var;
+        if ((var = cvar->FindVar(command[1])) == nullptr)
+        {
+            Warning("Unable to find cvar named \"%s\"\n", command[1]);
+            goto Usage;
+        }
+
+        std::optional<float> minMax[2];
+        for (int i = 0; i < 2; i++)
+        {
+            if (command[2 + i][0] == 'x' && command[2 + i][1] == '\0')
+                continue;
+            else if (command[2 + i][0] == '?' && command[2 + i][1] == '\0')
+            {
+                float val;
+                if ((i == 0 && var->GetMin(val)) || (i == 1 && var->GetMax(val)))
+                    minMax[i] = val;
+            }
+            else if (float parsed; TryParseFloat(command[2 + i], parsed))
+                minMax[i] = parsed;
+            else
+                goto Usage;
+
+            CCvar::SetMin(var, minMax[0]);
+            CCvar::SetMax(var, minMax[1]);
+            return;
+        }
+    }
 
 Usage:
     Warning(

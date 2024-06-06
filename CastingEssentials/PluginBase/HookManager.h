@@ -27,7 +27,7 @@ public:
     template<HookFunc fn>
     static __forceinline typename HookFuncType<fn>::Raw GetRawFunc()
     {
-        return (HookFuncType<fn>::Raw)s_RawFunctions[(int)fn];
+        return (typename HookFuncType<fn>::Raw)s_RawFunctions[(int)fn];
     }
 
     template<HookFunc fn>

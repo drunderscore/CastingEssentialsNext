@@ -15,6 +15,7 @@ class BaseGroupGlobalHook : public BaseGroupHook<FuncEnumType, hookID, Functiona
 public:
     using BaseGroupGlobalHookType = BaseGroupGlobalHook;
     using SelfType = BaseGroupGlobalHookType;
+    using BaseType = BaseGroupHook<FuncEnumType, hookID, FunctionalType, RetVal, Args...>;
     typedef OriginalFnType OriginalFnType;
     typedef DetourFnType DetourFnType;
 
@@ -30,11 +31,11 @@ public:
     virtual int GetUniqueHookID() const override { return (int)hookID; }
 
 protected:
-    static SelfType* This() { return assert_cast<SelfType*>(BaseThis()); }
+    static SelfType* This() { return assert_cast<SelfType*>(BaseType::BaseThis()); }
 
     static Internal::GlobalDetourFnPtr<RetVal, Args...> GlobalDetourFn()
     {
-        return &HookFunctionsInvoker<RetVal>::Invoke;
+        return &BaseType::template HookFunctionsInvoker<RetVal>::Invoke;
     }
 
     DetourFnType m_DetourFunction;
@@ -51,13 +52,13 @@ protected:
         Assert(m_OriginalFunction);
         Assert(m_DetourFunction);
 
-        if (!m_BaseHook)
+        if (!this->m_BaseHook)
         {
-            std::lock_guard<std::recursive_mutex> lock(m_BaseHookMutex);
-            if (!m_BaseHook)
+            std::lock_guard<std::recursive_mutex> lock(this->m_BaseHookMutex);
+            if (!this->m_BaseHook)
             {
-                m_BaseHook = CreateDetour(m_OriginalFunction, m_DetourFunction);
-                m_BaseHook->Hook();
+                this->m_BaseHook = CreateDetour(m_OriginalFunction, m_DetourFunction);
+                this->m_BaseHook->Hook();
             }
         }
     }
@@ -70,9 +71,9 @@ protected:
         // Make sure we're initialized so we don't have any nasty race conditions
         InitHook();
 
-        if (m_BaseHook)
+        if (this->m_BaseHook)
         {
-            OriginalFnType originalFnPtr = (OriginalFnType)(m_BaseHook->GetOriginalFunction());
+            OriginalFnType originalFnPtr = (OriginalFnType)(this->m_BaseHook->GetOriginalFunction());
             return std::bind(originalFnPtr, (std::_Ph<(int)(Is + 1)>{})...);
         }
         else
@@ -84,7 +85,6 @@ protected:
 
     struct ConstructorParam1;
     struct ConstructorParam2;
-    struct ConstructorParam3;
     BaseGroupGlobalHook(ConstructorParam1* detour)
     {
         m_OriginalFunction = nullptr;
@@ -122,11 +122,11 @@ public:
 
     virtual typename BaseType::Functional GetOriginal() override
     {
-        return GetOriginalImpl(std::index_sequence_for<Args...>{});
+        return this->GetOriginalImpl(std::index_sequence_for<Args...>{});
     }
 
 private:
-    typename BaseType::DetourFnType DefaultDetourFn() override { return GlobalDetourFn(); }
+    typename BaseType::DetourFnType DefaultDetourFn() override { return this->GlobalDetourFn(); }
 
     GroupGlobalHook() = delete;
     GroupGlobalHook(const SelfType& other) = delete;

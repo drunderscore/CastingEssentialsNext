@@ -4,7 +4,9 @@
 class HookManager;
 namespace Hooking
 {
-enum ShimType;
+enum ShimType
+{
+};
 template<class HookType, class... Args>
 class HookShim final : public BaseGroupHook<ShimType, (ShimType)HookType::HOOK_ID, typename HookType::Functional,
                                             typename HookType::RetVal, Args...>
@@ -12,6 +14,8 @@ class HookShim final : public BaseGroupHook<ShimType, (ShimType)HookType::HOOK_I
     friend class ::HookManager;
 
 public:
+    using BaseType = BaseGroupHook<ShimType, (ShimType)HookType::HOOK_ID, typename HookType::Functional,
+                                   typename HookType::RetVal, Args...>;
     using Functional = typename HookType::Functional;
 
     ~HookShim()
@@ -19,7 +23,7 @@ public:
         if (m_InnerHook)
             DetachHook();
 
-        m_HooksTable.clear();
+        this->m_HooksTable.clear();
     }
 
     Functional GetOriginal() override { return m_InnerHook->GetOriginal(); }
@@ -27,13 +31,13 @@ public:
 
     int AddHook(const Functional& newHook) override
     {
-        const auto retVal = BaseGroupHookType::AddHook(newHook);
+        const auto retVal = BaseType::AddHook(newHook);
         AddInnerHook(retVal, newHook);
         return retVal;
     }
     bool RemoveHook(int hookID, const char* funcName) override
     {
-        bool retVal = BaseGroupHookType::RemoveHook(hookID, funcName);
+        bool retVal = BaseType::RemoveHook(hookID, funcName);
         RemoveInnerHook(hookID, funcName);
         return retVal;
     }
@@ -45,7 +49,7 @@ public:
     }
 
     void InitHook() override {}
-    int GetUniqueHookID() const { return (int)HOOK_ID; }
+    int GetUniqueHookID() const { return (int)BaseType::HOOK_ID; }
 
     typedef HookType Inner;
     void AttachHook(const std::shared_ptr<HookType>& innerHook)
@@ -55,8 +59,8 @@ public:
         std::lock_guard<decltype(m_Mutex)> lock(m_Mutex);
         m_InnerHook = innerHook;
 
-        std::lock_guard<decltype(m_HooksTableMutex)> hooksTableLock(m_HooksTableMutex);
-        for (auto hooks : m_HooksTable)
+        std::lock_guard<decltype(this->m_HooksTableMutex)> hooksTableLock(this->m_HooksTableMutex);
+        for (auto hooks : this->m_HooksTable)
             AddInnerHook(hooks.first, hooks.second);
     }
 

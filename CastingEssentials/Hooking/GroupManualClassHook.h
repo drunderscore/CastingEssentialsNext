@@ -26,13 +26,13 @@ public:
     virtual Functional GetOriginal() override { return GetOriginalImpl(std::index_sequence_for<Args...>{}); }
 
 protected:
-    static SelfType* This() { return assert_cast<SelfType*>(BaseThis()); }
+    static SelfType* This() { return assert_cast<SelfType*>(BaseType::BaseThis()); }
 
     static Internal::LocalDetourFnPtr<Type, RetVal, Args...> SharedLocalDetourFn()
     {
         return [](Type* pThis, Args... args) {
             Assert(This()->GetType() == HookType::GlobalClass || This()->GetType() == HookType::VirtualGlobal);
-            return HookFunctionsInvoker<RetVal>::Invoke(pThis, args...);
+            return BaseType::template HookFunctionsInvoker<RetVal>::Invoke(pThis, args...);
         };
     }
 
@@ -42,11 +42,11 @@ protected:
         Assert(GetType() == HookType::GlobalClass || GetType() == HookType::VirtualGlobal);
 
         // Make sure we're initialized so we don't have any nasty race conditions
-        InitHook();
+        this->InitHook();
 
-        if (m_BaseHook)
+        if (this->m_BaseHook)
         {
-            OriginalFnType originalFnPtr = reinterpret_cast<OriginalFnType>(m_BaseHook->GetOriginalFunction());
+            OriginalFnType originalFnPtr = reinterpret_cast<OriginalFnType>(this->m_BaseHook->GetOriginalFunction());
             Assert(originalFnPtr);
             RetVal (*patch)(OriginalFnType, Type*, Args...) = [](OriginalFnType oFn, Type* instance, Args... args) {
                 Assert(oFn);
@@ -94,7 +94,7 @@ public:
     GroupManualClassHook(const SelfType& other) = delete;
 
 protected:
-    typename SelfType::DetourFnType DefaultDetourFn() { return SharedLocalDetourFn(); }
+    typename SelfType::DetourFnType DefaultDetourFn() { return this->SharedLocalDetourFn(); }
 };
 
 #if 0

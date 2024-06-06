@@ -139,7 +139,7 @@ void WeaponTools::RecvProxy_SequenceNum_Override(const CRecvProxyData* pData, vo
 
         if (ShouldDisableActivity(inputAct))
         {
-            if (auto& found = m_ViewModelCache.find(model); found != m_ViewModelCache.end())
+            if (auto found = m_ViewModelCache.find(model); found != m_ViewModelCache.end())
             {
                 if (auto newSequence = ActivityToSequence(pStudioHdr, found->second); newSequence >= 0)
                     newData.m_Value.m_Int = newSequence;

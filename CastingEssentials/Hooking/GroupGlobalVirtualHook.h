@@ -11,7 +11,8 @@ class BaseGroupGlobalVirtualHook : public BaseGroupManualClassHook<FuncEnumType,
 public:
     using BaseGroupGlobalVirtualHookType = BaseGroupGlobalVirtualHook;
     using SelfType = BaseGroupGlobalVirtualHookType;
-    using BaseType = BaseGroupManualClassHook;
+    using BaseType = BaseGroupManualClassHook<FuncEnumType, hookID, vaArgs, OriginalFnType, DetourFnType,
+                                              FunctionalType, Type, RetVal, Args...>;
     typedef MemFnType MemFnType;
 
     BaseGroupGlobalVirtualHook(Type* instance, MemFnType memFn, DetourFnType detour = nullptr)
@@ -34,22 +35,23 @@ private:
     {
         Assert(GetType() == HookType::VirtualGlobal);
 
-        if (!m_DetourFunction)
-            m_DetourFunction = (DetourFnType)DefaultDetourFn();
+        if (!this->m_DetourFunction)
+            this->m_DetourFunction = (DetourFnType)this->DefaultDetourFn();
 
         Assert(m_Instance);
         Assert(m_MemberFunction);
         Assert(m_DetourFunction);
 
-        if (!m_BaseHook)
+        if (!this->m_BaseHook)
         {
-            std::lock_guard<std::recursive_mutex> lock(m_BaseHookMutex);
-            if (!m_BaseHook)
+            std::lock_guard<std::recursive_mutex> lock(this->m_BaseHookMutex);
+            if (!this->m_BaseHook)
             {
                 // Only actual difference between this and non-global virtual hook (CreateVFuncSwapHook vs
                 // CreateVTableSwapHook). SMH
-                m_BaseHook = CreateVFuncSwapHook(m_Instance, m_DetourFunction, VTableOffset(m_MemberFunction));
-                m_BaseHook->Hook();
+                this->m_BaseHook =
+                    CreateVFuncSwapHook(m_Instance, this->m_DetourFunction, VTableOffset(m_MemberFunction));
+                this->m_BaseHook->Hook();
             }
         }
     }
@@ -71,7 +73,11 @@ class GroupGlobalVirtualHook<FuncEnumType, hookID, false, Type, RetVal, Args...>
 {
 public:
     using SelfType = GroupGlobalVirtualHook;
-    using BaseType = BaseGroupGlobalVirtualHook;
+    using BaseType =
+        BaseGroupGlobalVirtualHook<FuncEnumType, hookID, false, Internal::LocalFnPtr<Type, RetVal, Args...>,
+                                   Internal::LocalDetourFnPtr<Type, RetVal, Args...>,
+                                   Internal::MemberFnPtr<Type, RetVal, Args...>,
+                                   Internal::LocalFunctionalType<Type, RetVal, Args...>, Type, RetVal, Args...>;
     using MemFnType = typename BaseType::MemFnType;
     using DetourFnType = typename BaseType::DetourFnType;
 
@@ -87,7 +93,7 @@ private:
     GroupGlobalVirtualHook() = delete;
     GroupGlobalVirtualHook(const SelfType& other) = delete;
 
-    DetourFnType DefaultDetourFn() override { return SharedLocalDetourFn(); }
+    DetourFnType DefaultDetourFn() override { return this->SharedLocalDetourFn(); }
 };
 
 #if 0
