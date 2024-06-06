@@ -6,7 +6,7 @@
 #include <typeindex>
 #include <vector>
 
-#include "exceptions.h"
+#include "Exceptions.h"
 
 class IBaseModule
 {
