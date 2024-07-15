@@ -1,7 +1,6 @@
 #include "HUDHacking.h"
 
 #include "Modules/ItemSchema.h"
-#include "Modules/SrcTVPlus.h"
 
 #include "PluginBase/Entities.h"
 #include "PluginBase/EntityOffsetIterator.h"
@@ -45,12 +44,6 @@ EntityOffset<float> HUDHacking::s_SpycicleRegenTime;
 EntityTypeChecker HUDHacking::s_WearableShieldType;
 EntityTypeChecker HUDHacking::s_RazorbackType;
 EntityOffset<float> HUDHacking::s_CleanersCarbineCharge;
-
-EntityOffset<int> HUDHacking::s_LocalPlayerScoringKills;
-EntityOffset<int> HUDHacking::s_LocalPlayerScoringKillAssists;
-EntityOffset<int> HUDHacking::s_LocalPlayerScoringDeaths;
-
-using namespace std::string_view_literals;
 
 const HUDHacking::ChargeBarInfo HUDHacking::s_ChargeBarInfo[(int)ChargeBarType::COUNT] = {
     ChargeBarInfo("soda_popper", 1, "the Soda Popper", "#TF_SodaPopper", 448, MeterType::Hype),
@@ -119,10 +112,6 @@ HUDHacking::HUDHacking()
                                          (int)StatusEffect::COUNT),
       ce_hud_chargebars_enabled("ce_hud_chargebars_enabled", "0", FCVAR_NONE,
                                 "Enable showing banner charge status (progress bar + label) in playerpanels."),
-      ce_hud_statistics_enabled("ce_hud_statistics_enabled", "0", FCVAR_NONE,
-                                "Enable showing statistics (kills/assists/deaths) in playerpanels."),
-      ce_hud_statistics_target_id_enabled("ce_hud_statistics_target_id_enabled", "0", FCVAR_NONE,
-                                          "Enable showing statistics (kills/assists/deaths) in target ID."),
       ce_hud_chargebars_debug("ce_hud_chargebars_debug", "0", FCVAR_NONE),
 
       ce_hud_progressbar_directions(
@@ -164,13 +153,6 @@ bool HUDHacking::CheckDependencies()
             s_ChargeMeter = Entities::GetEntityProp<float>(playerClass, "m_flChargeMeter");
             s_CloakMeter = Entities::GetEntityProp<float>(playerClass, "m_flCloakMeter");
 
-            s_LocalPlayerScoringKills =
-                Entities::GetEntityProp<int>(playerClass, "m_Shared.tfsharedlocaldata.m_ScoreData.m_iKills");
-            s_LocalPlayerScoringKillAssists =
-                Entities::GetEntityProp<int>(playerClass, "m_Shared.tfsharedlocaldata.m_ScoreData.m_iKillAssists");
-            s_LocalPlayerScoringDeaths =
-                Entities::GetEntityProp<int>(playerClass, "m_Shared.tfsharedlocaldata.m_ScoreData.m_iDeaths");
-
             char buf[32];
             for (int i = 0; i < 11; i++)
                 s_ItemChargeMeters[i] =
@@ -202,7 +184,7 @@ bool HUDHacking::CheckDependencies()
     return true;
 }
 
-vgui::VPANEL HUDHacking::FindRootPanelByName(std::string_view name)
+vgui::VPANEL HUDHacking::GetSpecGUI()
 {
     auto clientMode = Interfaces::GetClientMode();
     if (!clientMode)
@@ -214,18 +196,15 @@ vgui::VPANEL HUDHacking::FindRootPanelByName(std::string_view name)
 
     auto viewportPanel = viewport->GetVPanel();
     const auto viewportChildCount = g_pVGuiPanel->GetChildCount(viewportPanel);
-    for (auto i = 0; i < viewportChildCount; i++)
+    for (int specguiIndex = 0; specguiIndex < viewportChildCount; specguiIndex++)
     {
-        auto panel = g_pVGuiPanel->GetChild(viewportPanel, i);
-        if (g_pVGuiPanel->GetName(panel) == name)
-            return panel;
+        vgui::VPANEL specguiPanel = g_pVGuiPanel->GetChild(viewportPanel, specguiIndex);
+        if (!strcmp(g_pVGuiPanel->GetName(specguiPanel), "specgui"))
+            return specguiPanel;
     }
 
     return 0;
 }
-
-vgui::VPANEL HUDHacking::GetSpecGUI() { return FindRootPanelByName("specgui"sv); }
-vgui::VPANEL HUDHacking::GetSpectatorTargetID() { return FindRootPanelByName("CSpectatorTargetID"sv); }
 
 vgui::AnimationController* HUDHacking::GetAnimationController()
 {
@@ -460,7 +439,6 @@ void HUDHacking::OnTick(bool inGame)
         return;
 
     UpdatePlayerPanels();
-    UpdateSpectatorTargetID(ce_hud_statistics_target_id_enabled.GetBool() && SrcTVPlus::IsAvailable());
 }
 
 void HUDHacking::UpdatePlayerPanels()
@@ -469,7 +447,6 @@ void HUDHacking::UpdatePlayerPanels()
     const auto playerHealthProgressBars = ce_hud_player_health_progressbars.GetBool();
     const auto statusEffects = ce_hud_player_status_effects.GetBool();
     const auto bannerStatus = ce_hud_chargebars_enabled.GetBool();
-    const auto statisticsStatus = ce_hud_statistics_enabled.GetBool() && SrcTVPlus::IsAvailable();
 
     auto specguivpanel = GetSpecGUI();
     if (!specguivpanel)
@@ -503,45 +480,11 @@ void HUDHacking::UpdatePlayerPanels()
                 UpdateStatusEffect(playerVPanel, playerPanel, *player);
 
             UpdateChargeBar(bannerStatus, playerVPanel, playerPanel, *player);
-            UpdateStatistics(statisticsStatus, playerVPanel, playerPanel, *player);
 
             if (ce_hud_class_change_animations.GetBool())
                 UpdateClassChangeAnimations(playerVPanel, playerPanel, *player);
         }
     }
-}
-
-void HUDHacking::UpdateSpectatorTargetID(bool enabled)
-{
-    auto spectatorTargetIdVPanel = GetSpectatorTargetID();
-    if (!spectatorTargetIdVPanel)
-        return;
-
-    auto panel = assert_cast<vgui::EditablePanel*>(g_pVGuiPanel->GetPanel(spectatorTargetIdVPanel, "ClientDLL"));
-    if (!panel)
-        return;
-
-    if (!enabled)
-    {
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        return;
-    }
-
-    if (!g_pVGuiPanel->IsVisible(spectatorTargetIdVPanel))
-        return;
-
-    auto targetEntityIndex = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(panel) + 0x2D8);
-    auto player = Player::GetPlayer(targetEntityIndex, __FUNCTION__);
-    if (!player)
-        return;
-
-    auto playerNetworkable = player->GetEntity()->GetClientNetworkable();
-
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKills.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
 }
 
 void HUDHacking::UpdateStatusEffect(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player)
@@ -677,23 +620,6 @@ void HUDHacking::UpdateClassChangeAnimations(vgui::VPANEL playerVPanel, vgui::Ed
             animController, playerPanel,
             player.GetTeam() == TFTeam::Red ? "PlayerPanel_ClassChangedRed" : "PlayerPanel_ClassChangedBlue", false);
     }
-}
-
-void HUDHacking::UpdateStatistics(bool enabled, vgui::VPANEL vpanel, vgui::EditablePanel* panel, Player& player)
-{
-    if (!enabled)
-    {
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        return;
-    }
-
-    auto playerNetworkable = player.GetBaseEntity()->GetClientNetworkable();
-
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKills.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
 }
 
 void HUDHacking::CheckItemForCharge(Player& player, const IClientNetworkable& playerNetworkable,
