@@ -223,9 +223,9 @@ private:
     static constexpr const char WEAPON_CHARGE_AMOUNT[] = "weaponchargeamount";
     static constexpr const char WEAPON_CHARGE_NAME[] = "weaponchargename";
 
-    static constexpr auto STATISTIC_KILLS = "statskills";
-    static constexpr auto STATISTIC_ASSISTS = "statsassists";
-    static constexpr auto STATISTIC_DEATHS = "statsdeaths";
+    static constexpr auto STATISTIC_KILLS = "statistickills";
+    static constexpr auto STATISTIC_ASSISTS = "statisticassists";
+    static constexpr auto STATISTIC_DEATHS = "statisticdeaths";
 
     // Static, because this is only used in GetPlayerFromPanel and we don't want to require
     // that HUDHacking module was loaded successfully just to use this completely independent function.
