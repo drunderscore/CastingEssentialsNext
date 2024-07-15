@@ -524,8 +524,8 @@ void HUDHacking::UpdateSpectatorTargetID(bool enabled)
     if (!enabled)
     {
         panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_ASSISTS, "");
-        panel->SetDialogVariable(STATISTIC_DEATHS, "");
+        panel->SetDialogVariable(STATISTIC_KILLS, "");
+        panel->SetDialogVariable(STATISTIC_KILLS, "");
         return;
     }
 
@@ -540,8 +540,8 @@ void HUDHacking::UpdateSpectatorTargetID(bool enabled)
     auto playerNetworkable = player->GetEntity()->GetClientNetworkable();
 
     panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKills.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_ASSISTS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_DEATHS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
+    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
+    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
 }
 
 void HUDHacking::UpdateStatusEffect(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player)
@@ -684,16 +684,16 @@ void HUDHacking::UpdateStatistics(bool enabled, vgui::VPANEL vpanel, vgui::Edita
     if (!enabled)
     {
         panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_ASSISTS, "");
-        panel->SetDialogVariable(STATISTIC_DEATHS, "");
+        panel->SetDialogVariable(STATISTIC_KILLS, "");
+        panel->SetDialogVariable(STATISTIC_KILLS, "");
         return;
     }
 
     auto playerNetworkable = player.GetBaseEntity()->GetClientNetworkable();
 
     panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKills.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_ASSISTS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_DEATHS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
+    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
+    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
 }
 
 void HUDHacking::CheckItemForCharge(Player& player, const IClientNetworkable& playerNetworkable,
