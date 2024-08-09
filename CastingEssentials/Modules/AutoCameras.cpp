@@ -194,8 +194,11 @@ void AutoCameras::LevelInit() { LoadConfig(); }
 
 void AutoCameras::LoadConfig()
 {
-    const char* const mapName = Interfaces::GetEngineClient()->GetLevelName();
-    LoadConfig(mapName);
+    if (!Interfaces::GetEngineClient()->IsInGame())
+        return;
+
+    if (auto mapName = Interfaces::GetEngineClient()->GetLevelName())
+        LoadConfig(mapName);
 }
 
 void AutoCameras::LoadConfig(const char* bspName)
