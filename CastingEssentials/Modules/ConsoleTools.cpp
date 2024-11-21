@@ -116,8 +116,19 @@ void ConsoleTools::AddFilter(const CCommand& command)
 {
     if (command.ArgC() >= 2)
     {
-        const auto& insertionResult = m_Filters.emplace(std::make_pair(
-            command[1], std::regex(command[1], std::regex_constants::ECMAScript | std::regex_constants::optimize)));
+        std::regex regex;
+
+        try
+        {
+            regex = {command[1], std::regex_constants::ECMAScript | std::regex_constants::optimize};
+        }
+        catch (const std::regex_error& error)
+        {
+            PluginWarning("Failed to compile regex: %s\n", error.what());
+            return;
+        }
+
+        const auto& insertionResult = m_Filters.emplace(std::make_pair(command[1], std::move(regex)));
 
         if (!insertionResult.second)
         {
