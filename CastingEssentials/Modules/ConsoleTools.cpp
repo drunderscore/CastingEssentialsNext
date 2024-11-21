@@ -39,14 +39,9 @@ public:
 };
 
 ConsoleTools::ConsoleTools()
-    : ce_consoletools_filter_enabled("ce_consoletools_filter_enabled", "0", FCVAR_NONE,
-                                     "Enables or disables console filtering.",
-                                     [](IConVar* var, const char*, float) {
-                                         // FIXME: This depends on hooking varargs member functions, which is not yet
-                                         // functional for 64-bit.
-                                         Warning("!! Console filtering is non-functional in CastingEssentials Next, "
-                                                 "disabled to prevent console text corruption !!\n");
-                                     }),
+    : ce_consoletools_filter_enabled(
+          "ce_consoletools_filter_enabled", "0", FCVAR_NONE, "Enables or disables console filtering.",
+          [](IConVar* var, const char*, float) { GetModule()->ToggleFilterEnabled(static_cast<ConVar*>(var)); }),
       ce_consoletools_filter_add(
           "ce_consoletools_filter_add", [](const CCommand& cmd) { GetModule()->AddFilter(cmd); },
           "Adds a new console filter. Uses regular expressions."),
