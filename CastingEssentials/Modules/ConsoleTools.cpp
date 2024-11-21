@@ -115,7 +115,7 @@ void ConsoleTools::AddFilter(const CCommand& command)
 
         try
         {
-            regex = {command[1], std::regex_constants::ECMAScript | std::regex_constants::optimize};
+            regex = std::regex(command[1], std::regex_constants::ECMAScript | std::regex_constants::optimize);
         }
         catch (const std::regex_error& error)
         {
