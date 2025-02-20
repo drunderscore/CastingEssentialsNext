@@ -233,10 +233,10 @@ C_GameRules* Interfaces::GetGameRules()
     static C_GameRules* s_GameRules = nullptr;
     if (!s_GameRules)
     {
-        constexpr const char* SIG = "\xF3\x0F\x10\x30\xF3\x0F\x10\x78\x04\xF3\x44\x0F\x10\x40\x08\x48\x8B\x07\xFF\x90"
-                                    "\x10\x04\x00\x00\x48\x8B\x0D\x00\x00\x00\x00\x84\xC0\x48\x8B\x01";
-        constexpr const char* MASK = "xxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxxx";
-        constexpr uintptr_t OFFSET = 24;
+        constexpr const char* SIG =
+            "\x48\x89\x9C\x24\x88\x00\x00\x00\x48\x8B\x1D\x00\x00\x00\x00\x48\x89\x7C\x24\x78\x4C\x89\x7C\x24\x60";
+        constexpr const char* MASK = "xxxxxxxxxxx????xxxxxxxxxx";
+        constexpr uintptr_t OFFSET = 8;
 
         if (auto gr = reinterpret_cast<uintptr_t>(SignatureScan("client", SIG, MASK)))
         {
