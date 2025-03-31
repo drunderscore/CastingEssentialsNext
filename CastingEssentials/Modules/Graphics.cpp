@@ -880,9 +880,9 @@ void Graphics::BuildExtraGlowData(CGlowObjectManager* glowMgr, bool& anyAlways, 
                 }
             }
         }
-        else if (s_BuildingType.Match(current.m_hEntity->GetClientNetworkable()))
+        else if (ent && s_BuildingType.Match(ent->GetClientNetworkable()))
         {
-            auto team = Entities::GetEntityTeamSafe(current.m_hEntity->GetClientNetworkable());
+            auto team = Entities::GetEntityTeamSafe(ent->GetClientNetworkable());
 
             if (team == TFTeam::Red && hasRedBuildingOverride)
             {
