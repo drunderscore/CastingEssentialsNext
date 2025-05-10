@@ -6,6 +6,8 @@
 #include "Modules.h"
 #include "Player.h"
 
+#include <chrono>
+
 #include <convar.h>
 
 class CastingPlugin final : public Plugin
