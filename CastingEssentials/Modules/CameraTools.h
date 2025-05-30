@@ -76,6 +76,7 @@ private:
     ConVar ce_tplock_taunt_dps;
 
     ConVar ce_tplock_bone;
+    ConVar ce_tplock_bone_use_angle;
 
     ConCommand ce_cameratools_spec_pos;
     ConCommand ce_cameratools_spec_pos_delta;
@@ -116,6 +117,7 @@ private:
     static void ParseTPLockValuesInto(ConVar* cvar, const char* oldVal, std::array<TPLockValue, 3>& values);
     static void ParseTPLockValuesInto(ConVar* cvar, const char* oldVal, std::array<float, 3>& values);
     void TPLockBoneUpdated(ConVar* cvar);
+    void TPLockBoneUseAnglesUpdated(ConVar* cvar);
 
     struct TPLockRuleset
     {
@@ -123,6 +125,7 @@ private:
         std::array<TPLockValue, 3> m_Angle;
         std::array<float, 3> m_DPS;
         std::string m_Bone;
+        bool m_UseBoneAngles;
     };
 
     TPLockRuleset m_TPLockDefault;

@@ -108,6 +108,11 @@ CameraTools::CameraTools()
           "Bone to attach camera position to. Enable developer 2 for associated warnings.",
           [](IConVar* var, const char*, float) { GetModule()->TPLockBoneUpdated(static_cast<ConVar*>(var)); }),
 
+      ce_tplock_bone_use_angle(
+          "ce_tplock_bone_use_angle", "0", FCVAR_NONE,
+          "Use the angles of the bone instead of the player eye angles in calculations.",
+          [](IConVar* var, const char*, float) { GetModule()->TPLockBoneUseAnglesUpdated(static_cast<ConVar*>(var)); }),
+
       ce_cameratools_spec_entindex(
           "ce_cameratools_spec_entindex", [](const CCommand& args) { GetModule()->SpecEntIndex(args); },
           "Spectates a player by entindex"),
@@ -443,6 +448,12 @@ void CameraTools::TPLockBoneUpdated(ConVar* cv)
 {
     // For the time being, bone is shared between all rulesets
     m_TPLockDefault.m_Bone = m_TPLockTaunt.m_Bone = cv->GetString();
+}
+
+void CameraTools::TPLockBoneUseAnglesUpdated(ConVar* cv)
+{
+    // For the time being, bone is shared between all rulesets
+    m_TPLockDefault.m_UseBoneAngles = m_TPLockTaunt.m_UseBoneAngles = cv->GetBool();
 }
 
 void CameraTools::SpecClass(const CCommand& command)
@@ -824,6 +835,8 @@ bool CameraTools::PerformTPLock(const TPLockRuleset& ruleset, Vector& origin, QA
         return false;
 
     Vector targetPos;
+    QAngle idealAngles = targetPlayer->GetEyeAngles();
+
     const int targetBone = baseAnimating->LookupBone(ruleset.m_Bone.c_str());
     if (targetBone < 0)
     {
@@ -834,10 +847,10 @@ bool CameraTools::PerformTPLock(const TPLockRuleset& ruleset, Vector& origin, QA
     else
     {
         QAngle dummy;
-        baseAnimating->GetBonePosition(targetBone, targetPos, dummy);
+        QAngle* boneAnglesDestination = ruleset.m_UseBoneAngles ? &idealAngles : &dummy;
+        baseAnimating->GetBonePosition(targetBone, targetPos, *boneAnglesDestination);
     }
 
-    QAngle idealAngles = targetPlayer->GetEyeAngles();
     for (uint_fast8_t i = 0; i < 3; i++)
         idealAngles[i] = AngleNormalize(ruleset.m_Angle[i].GetValue(idealAngles[i]));
 
