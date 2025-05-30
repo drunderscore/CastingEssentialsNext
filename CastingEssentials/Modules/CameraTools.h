@@ -70,10 +70,12 @@ private:
     ConVar ce_tplock_default_pos;
     ConVar ce_tplock_default_angle;
     ConVar ce_tplock_default_dps;
+    ConVar ce_tplock_default_clip_world;
 
     ConVar ce_tplock_taunt_pos;
     ConVar ce_tplock_taunt_angle;
     ConVar ce_tplock_taunt_dps;
+    ConVar ce_tplock_taunt_clip_world;
 
     ConVar ce_tplock_bone;
     ConVar ce_tplock_bone_use_angle;
@@ -126,6 +128,7 @@ private:
         std::array<float, 3> m_DPS;
         std::string m_Bone;
         bool m_UseBoneAngles;
+        bool m_ClipWorld;
     };
 
     TPLockRuleset m_TPLockDefault;

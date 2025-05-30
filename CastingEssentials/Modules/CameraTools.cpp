@@ -84,6 +84,11 @@ CameraTools::CameraTools()
           [](IConVar* var, const char* old, float) {
               ParseTPLockValuesInto(static_cast<ConVar*>(var), old, GetModule()->m_TPLockDefault.m_DPS);
           }),
+      ce_tplock_default_clip_world("ce_tplock_default_clip_world", "1", FCVAR_NONE,
+                                   "Whether the camera should clip to the world when tplock is active.",
+                                   [](IConVar* var, const char* old, float) {
+                                       GetModule()->m_TPLockDefault.m_ClipWorld = static_cast<ConVar*>(var)->GetBool();
+                                   }),
 
       ce_tplock_taunt_pos("ce_tplock_taunt_pos", "0 -80 -15", FCVAR_NONE,
                           "Camera x/y/z offset from ce_tplock_bone when taunting with taunt tplock enabled.",
@@ -102,6 +107,11 @@ CameraTools::CameraTools()
                           [](IConVar* var, const char* old, float) {
                               ParseTPLockValuesInto(static_cast<ConVar*>(var), old, GetModule()->m_TPLockTaunt.m_DPS);
                           }),
+      ce_tplock_taunt_clip_world("ce_tplock_taunt_clip_world", "1", FCVAR_NONE,
+                                 "Whether the camera should clip to the world when tplock is active whilst taunting.",
+                                 [](IConVar* var, const char* old, float) {
+                                     GetModule()->m_TPLockTaunt.m_ClipWorld = static_cast<ConVar*>(var)->GetBool();
+                                 }),
 
       ce_tplock_bone(
           "ce_tplock_bone", "bip_spine_2", FCVAR_NONE,
@@ -782,18 +792,20 @@ Vector CameraTools::CalcPosForAngle(const TPLockRuleset& ruleset, const Vector& 
     idealPos += up * ruleset.m_Pos[2];
 
     const Vector camDir = (idealPos - orbitCenter).Normalized();
-    const float dist = orbitCenter.DistTo(idealPos);
+    float wallDist = 1.0f;
 
-    // clip against walls
-    trace_t trace;
+    if (ruleset.m_ClipWorld)
+    {
+        // clip against walls
+        trace_t trace;
 
-    CTraceFilterNoNPCsOrPlayer noPlayers(nullptr, COLLISION_GROUP_NONE);
-    UTIL_TraceHull(orbitCenter, idealPos, WALL_MIN, WALL_MAX, MASK_SOLID, &noPlayers, &trace);
+        CTraceFilterNoNPCsOrPlayer noPlayers(nullptr, COLLISION_GROUP_NONE);
+        UTIL_TraceHull(orbitCenter, idealPos, WALL_MIN, WALL_MAX, MASK_SOLID, &noPlayers, &trace);
 
-    const float wallDist = (trace.endpos - orbitCenter).Length();
+        wallDist = (trace.endpos - orbitCenter).Length();
+    }
 
     return orbitCenter + camDir * wallDist;
-    ;
 }
 
 bool CameraTools::InToolModeOverride() const
