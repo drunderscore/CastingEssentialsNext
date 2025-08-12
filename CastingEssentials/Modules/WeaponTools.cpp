@@ -249,8 +249,8 @@ void WeaponTools::UpdateVMIdleActivity(const CHandle<C_BaseViewModel>& vm, Activ
 
 std::pair<std::byte*, std::byte*> WeaponTools::GetSkinDownsampleVars()
 {
-    static const auto var1 = SignatureScan("client", "\xC1\xF8\x02\x3B\xC2\x0F\x4C\xC2\x89\x45\xF0", "xxxxxxxxxxx", 2);
-    static const auto var2 = SignatureScan("client", "\xC1\xF8\x02\x3B\xC2\x0F\x4C\xC2\x89\x45\xF4", "xxxxxxxxxxx", 2);
+    static const auto var1 = SignatureScan("client", "\x41\xC1\xFD\x02\x44\x3B\xE8\x44\x0F\x4C\xE8", "xxxxxxxxxxx", 3);
+    static const auto var2 = SignatureScan("client", "\x41\xC1\xFF\x02\x44\x3B\xF8\x44\x0F\x4C\xF8", "xxxxxxxxxxx", 3);
     return std::pair<std::byte*, std::byte*>(var1, var2);
 }
 
