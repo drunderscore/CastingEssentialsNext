@@ -1,7 +1,7 @@
 BSD 2-Clause License
 
 Copyright (c) 2018, PazerOP
-Copyright (c) 2024, Dr. Underscore
+Copyright (c) 2024, resin
 Portions copyright (c) fwdcp
 All rights reserved.
 

@@ -28,7 +28,7 @@ BEGIN
             VALUE "FileVersion", "@GIT_SHA1_SHORT@"
             VALUE "InternalName", "CastingEssentialsNext\0"
             VALUE "ProductName", "CastingEssentials Next"
-            VALUE "LegalCopyright", "tsc, PazerOP, dalegaard, Dr. Underscore"
+            VALUE "LegalCopyright", "tsc, PazerOP, dalegaard, resin"
         END
     END
 END
