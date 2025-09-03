@@ -23,6 +23,7 @@
 #include <vprof.h>
 
 #include <algorithm>
+#include <cmath>
 
 // Dumb macro names
 #undef min
@@ -562,8 +563,7 @@ void HUDHacking::UpdateSpectatorTargetID()
     {
         // This is the X component of a Vector, so surely this is fine.
         auto& velocity = reinterpret_cast<Vector&>(s_BasePlayerVelocityX.GetValue(playerNetworkable));
-        Msg("Velocity %f, %f, %f length %f\n", velocity.Length());
-        panel->SetDialogVariable(SPEED, velocity.Length());
+        panel->SetDialogVariable(SPEED, static_cast<int>(std::lround(velocity.Length()));
     }
     else
     {
