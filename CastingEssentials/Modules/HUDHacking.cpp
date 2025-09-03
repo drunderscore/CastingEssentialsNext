@@ -23,6 +23,7 @@
 #include <vprof.h>
 
 #include <algorithm>
+#include <cmath>
 
 // Dumb macro names
 #undef min
@@ -49,6 +50,10 @@ EntityOffset<float> HUDHacking::s_CleanersCarbineCharge;
 EntityOffset<int> HUDHacking::s_LocalPlayerScoringKills;
 EntityOffset<int> HUDHacking::s_LocalPlayerScoringKillAssists;
 EntityOffset<int> HUDHacking::s_LocalPlayerScoringDeaths;
+
+EntityOffset<float> HUDHacking::s_BasePlayerVelocityX;
+EntityOffset<float> HUDHacking::s_BasePlayerVelocityY;
+EntityOffset<float> HUDHacking::s_BasePlayerVelocityZ;
 
 using namespace std::string_view_literals;
 
@@ -123,6 +128,8 @@ HUDHacking::HUDHacking()
                                 "Enable showing statistics (kills/assists/deaths) in playerpanels."),
       ce_hud_statistics_target_id_enabled("ce_hud_statistics_target_id_enabled", "0", FCVAR_NONE,
                                           "Enable showing statistics (kills/assists/deaths) in target ID."),
+      ce_hud_speedometer_enabled("ce_hud_speedometer_enabled", "0", FCVAR_NONE,
+                                 "Enable showing speed of player in target ID."),
       ce_hud_chargebars_debug("ce_hud_chargebars_debug", "0", FCVAR_NONE),
 
       ce_hud_progressbar_directions(
@@ -175,6 +182,10 @@ bool HUDHacking::CheckDependencies()
             for (int i = 0; i < 11; i++)
                 s_ItemChargeMeters[i] =
                     Entities::GetEntityProp<float>(playerClass, Entities::PropIndex(buf, "m_flItemChargeMeter", i));
+
+            s_BasePlayerVelocityX = Entities::GetEntityProp<float>(playerClass, "m_vecVelocity[0]");
+            s_BasePlayerVelocityY = Entities::GetEntityProp<float>(playerClass, "m_vecVelocity[1]");
+            s_BasePlayerVelocityZ = Entities::GetEntityProp<float>(playerClass, "m_vecVelocity[2]");
         }
 
         // CTFWeaponBase
@@ -460,7 +471,7 @@ void HUDHacking::OnTick(bool inGame)
         return;
 
     UpdatePlayerPanels();
-    UpdateSpectatorTargetID(ce_hud_statistics_target_id_enabled.GetBool() && SrcTVPlus::IsAvailable());
+    UpdateSpectatorTargetID();
 }
 
 void HUDHacking::UpdatePlayerPanels()
@@ -511,25 +522,20 @@ void HUDHacking::UpdatePlayerPanels()
     }
 }
 
-void HUDHacking::UpdateSpectatorTargetID(bool enabled)
+void HUDHacking::UpdateSpectatorTargetID()
 {
+    const auto statistics = ce_hud_statistics_target_id_enabled.GetBool() && SrcTVPlus::IsAvailable();
+    const auto speedometer = ce_hud_speedometer_enabled.GetBool();
+
     auto spectatorTargetIdVPanel = GetSpectatorTargetID();
     if (!spectatorTargetIdVPanel)
         return;
 
+    if (!g_pVGuiPanel->IsVisible(spectatorTargetIdVPanel))
+        return;
+
     auto panel = assert_cast<vgui::EditablePanel*>(g_pVGuiPanel->GetPanel(spectatorTargetIdVPanel, "ClientDLL"));
     if (!panel)
-        return;
-
-    if (!enabled)
-    {
-        panel->SetDialogVariable(STATISTIC_KILLS, "");
-        panel->SetDialogVariable(STATISTIC_ASSISTS, "");
-        panel->SetDialogVariable(STATISTIC_DEATHS, "");
-        return;
-    }
-
-    if (!g_pVGuiPanel->IsVisible(spectatorTargetIdVPanel))
         return;
 
     auto targetEntityIndex = *reinterpret_cast<int*>(reinterpret_cast<uintptr_t>(panel) + 0x2D8);
@@ -538,10 +544,31 @@ void HUDHacking::UpdateSpectatorTargetID(bool enabled)
         return;
 
     auto playerNetworkable = player->GetEntity()->GetClientNetworkable();
+    if (!playerNetworkable)
+        return;
 
-    panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKills.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_ASSISTS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
-    panel->SetDialogVariable(STATISTIC_DEATHS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
+    if (statistics)
+    {
+        panel->SetDialogVariable(STATISTIC_ASSISTS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
+        panel->SetDialogVariable(STATISTIC_DEATHS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
+    }
+    else
+    {
+        panel->SetDialogVariable(STATISTIC_KILLS, "");
+        panel->SetDialogVariable(STATISTIC_ASSISTS, "");
+        panel->SetDialogVariable(STATISTIC_DEATHS, "");
+    }
+
+    if (speedometer)
+    {
+        // This is the X component of a Vector, so surely this is fine.
+        auto& velocity = reinterpret_cast<Vector&>(s_BasePlayerVelocityX.GetValue(playerNetworkable));
+        panel->SetDialogVariable(SPEED, static_cast<int>(std::lround(velocity.Length2D())));
+    }
+    else
+    {
+        panel->SetDialogVariable(SPEED, "");
+    }
 }
 
 void HUDHacking::UpdateStatusEffect(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player)
