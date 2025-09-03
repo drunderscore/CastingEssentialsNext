@@ -563,7 +563,7 @@ void HUDHacking::UpdateSpectatorTargetID()
     {
         // This is the X component of a Vector, so surely this is fine.
         auto& velocity = reinterpret_cast<Vector&>(s_BasePlayerVelocityX.GetValue(playerNetworkable));
-        panel->SetDialogVariable(SPEED, static_cast<int>(std::lround(velocity.Length()));
+        panel->SetDialogVariable(SPEED, static_cast<int>(std::lround(velocity.Length())));
     }
     else
     {
