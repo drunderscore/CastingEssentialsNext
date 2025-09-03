@@ -215,6 +215,7 @@ private:
     };
 
     ConVar ce_hud_statistics_enabled;
+    ConVar ce_hud_speedometer_enabled;
     ConVar ce_hud_statistics_target_id_enabled;
 
     static const char* GetStatusEffectFormatString(StatusEffect effect);
@@ -223,6 +224,7 @@ private:
     static constexpr const char WEAPON_CHARGE_AMOUNT[] = "weaponchargeamount";
     static constexpr const char WEAPON_CHARGE_NAME[] = "weaponchargename";
 
+    static constexpr auto SPEED = "speed";
     static constexpr auto STATISTIC_KILLS = "statskills";
     static constexpr auto STATISTIC_ASSISTS = "statsassists";
     static constexpr auto STATISTIC_DEATHS = "statsdeaths";
@@ -233,7 +235,7 @@ private:
 
     void OnTick(bool inGame) override;
     void UpdatePlayerPanels();
-    void UpdateSpectatorTargetID(bool enabled);
+    void UpdateSpectatorTargetID();
     static void ForwardPlayerPanelBorder(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel);
     static void UpdatePlayerHealth(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player);
     void UpdateStatusEffect(vgui::VPANEL playerVPanel, vgui::EditablePanel* playerPanel, const Player& player);
@@ -277,4 +279,8 @@ private:
     static EntityOffset<int> s_LocalPlayerScoringKills;
     static EntityOffset<int> s_LocalPlayerScoringKillAssists;
     static EntityOffset<int> s_LocalPlayerScoringDeaths;
+
+    static EntityOffset<float> s_BasePlayerVelocityX;
+    static EntityOffset<float> s_BasePlayerVelocityY;
+    static EntityOffset<float> s_BasePlayerVelocityZ;
 };
