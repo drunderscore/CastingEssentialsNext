@@ -14,8 +14,10 @@ public:
 
 private:
     void UpdateWindowTitle(const char* oldval);
+    void UpdateSeparateConsole();
 
     ConVar ce_clienttools_windowtitle;
+    ConVar ce_clienttools_separate_console;
 
     std::string m_OriginalTitle;
 };

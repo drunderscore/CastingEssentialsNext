@@ -9,7 +9,11 @@ MODULE_REGISTER(ClientTools);
 ClientTools::ClientTools()
     : ce_clienttools_windowtitle(
           "ce_clienttools_windowtitle", "", FCVAR_NONE, "Overrides the game window title",
-          [](IConVar* var, const char* oldval, float foldval) { GetModule()->UpdateWindowTitle(oldval); })
+          [](IConVar* var, const char* oldval, float foldval) { GetModule()->UpdateWindowTitle(oldval); }),
+      ce_clienttools_separate_console(
+          "ce_clienttools_separate_console", "0", FCVAR_NONE,
+          "Opens a separate console window to input commands and output spew",
+          [](IConVar* var, const char* oldval, float foldval) { GetModule()->UpdateSeparateConsole(); })
 {
 }
 
@@ -90,5 +94,26 @@ void ClientTools::UpdateWindowTitle(const char* oldval)
         }
 
         SetWindowText(GetMainWindow(), newval);
+    }
+}
+
+void ClientTools::UpdateSeparateConsole()
+{
+    if (ce_clienttools_separate_console.GetBool())
+    {
+        SetConsoleOutputCP(CP_UTF8);
+        AllocConsole();
+
+        printf("hello i am printf! isnt this fire 🔥 👩‍🚒\n");
+        Msg("hello i am Msg! isnt this fire 🔥 👩‍🚒\n");
+
+        auto consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        const char message[] = "hello i am WriteFile! isnt this fire 🔥 👩‍🚒\n";
+        if (!WriteFile(consoleHandle, message, sizeof(message) - 1, NULL, NULL))
+            Warning("WriteFile failed with %d\n", GetLastError());
+    }
+    else
+    {
+        FreeConsole();
     }
 }
