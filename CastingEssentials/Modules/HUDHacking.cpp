@@ -549,6 +549,7 @@ void HUDHacking::UpdateSpectatorTargetID()
 
     if (statistics)
     {
+        panel->SetDialogVariable(STATISTIC_KILLS, s_LocalPlayerScoringKills.GetValue(playerNetworkable));
         panel->SetDialogVariable(STATISTIC_ASSISTS, s_LocalPlayerScoringKillAssists.GetValue(playerNetworkable));
         panel->SetDialogVariable(STATISTIC_DEATHS, s_LocalPlayerScoringDeaths.GetValue(playerNetworkable));
     }
