@@ -26,8 +26,6 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
-        # This is the SDK version I've tested to work. Newer ones have certain issues with Source's memoverride.cpp
-        sdk: 10.0.17763.0
 
     - name: Install ninja
       uses: seanmiddleditch/gha-setup-ninja@master
