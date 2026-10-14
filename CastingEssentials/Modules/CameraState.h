@@ -59,6 +59,10 @@ private:
     bool m_LastFrameIsThirdPerson;
     bool m_ThisFrameIsThirdPerson;
 
+    bool ModulesWantThirdPerson() const;
+    bool m_ThirdPersonOverride; // ModulesWantThirdPerson() as of the last tick
+    void UpdateThirdPersonOverride();
+
     int m_LastSpecTarget;
 
     void Invalidate(bool& b);

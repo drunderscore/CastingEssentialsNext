@@ -7,6 +7,7 @@
 #include "PluginBase/Player.h"
 
 #include <cdll_int.h>
+#include <igameevents.h>
 #include <vprof.h>
 
 #undef min
@@ -23,6 +24,7 @@ CameraState::CameraState()
     InitViews();
 
     m_LastSpecTarget = 0;
+    m_ThirdPersonOverride = false;
 }
 
 ObserverMode CameraState::GetLocalObserverMode()
@@ -108,25 +110,60 @@ bool CameraState::IsThirdPersonCameraOverride()
     VPROF_BUDGET(__FUNCTION__, VPROF_BUDGETGROUP_CE);
     m_LastFrameIsThirdPerson = m_ThisFrameIsThirdPerson;
 
-    m_ThisFrameIsThirdPerson = false;
-
-    {
-        ICameraOverride* module;
-
-        if ((module = CameraTools::GetModule()) != nullptr)
-            m_ThisFrameIsThirdPerson = module->IsThirdPersonCameraOverride();
-
-        if (!m_ThisFrameIsThirdPerson && (module = CameraSmooths::GetModule()) != nullptr)
-            m_ThisFrameIsThirdPerson = module->IsThirdPersonCameraOverride();
-
-        if (!m_ThisFrameIsThirdPerson && (module = FOVOverride::GetModule()) != nullptr)
-            m_ThisFrameIsThirdPerson = module->IsThirdPersonCameraOverride();
-    }
+    m_ThisFrameIsThirdPerson = ModulesWantThirdPerson();
 
     if (m_ThisFrameIsThirdPerson)
         GetHooks()->SetState<HookFunc::IClientEngineTools_IsThirdPersonCamera>(Hooking::HookAction::SUPERCEDE);
 
     return m_ThisFrameIsThirdPerson;
+}
+
+bool CameraState::ModulesWantThirdPerson() const
+{
+    ICameraOverride* module;
+
+    if ((module = CameraTools::GetModule()) != nullptr && module->IsThirdPersonCameraOverride())
+        return true;
+
+    if ((module = CameraSmooths::GetModule()) != nullptr && module->IsThirdPersonCameraOverride())
+        return true;
+
+    if ((module = FOVOverride::GetModule()) != nullptr && module->IsThirdPersonCameraOverride())
+        return true;
+
+    return false;
+}
+
+void CameraState::UpdateThirdPersonOverride()
+{
+    const bool thirdPerson = ModulesWantThirdPerson();
+    if (thirdPerson == m_ThirdPersonOverride)
+        return;
+
+    m_ThirdPersonOverride = thirdPerson;
+
+    // TF2 only decides whether the in-eye target's cosmetics/weapon are drawn when it sees the view change (a
+    // spectator mode/target change, or a real first <-> third person switch), and the answer stays cached in the
+    // client leaf system until the next one. Our IsThirdPersonCamera override pulls the camera out of (and back into)
+    // first person without TF2 noticing -- ce_tplock_taunt_enable on every taunt -- so the target's hats stayed
+    // hidden for the whole taunt. Replay the event C_HLTVCamera::SetMode fires so C_TFPlayer refreshes its wearables,
+    // weapon attachments and bodygroups itself; it only acts on it when IN_EYE is involved.
+    if (GetLocalObserverMode() != OBS_MODE_IN_EYE)
+        return;
+
+    auto target = Player::AsPlayer(GetLocalObserverTarget());
+    auto eventManager = Interfaces::GetGameEventManager();
+    if (!target || !eventManager)
+        return;
+
+    // Null when nothing listens to it, e.g. no TF players exist yet.
+    if (auto event = eventManager->CreateEvent("hltv_changed_mode"))
+    {
+        event->SetInt("oldmode", OBS_MODE_IN_EYE);
+        event->SetInt("newmode", OBS_MODE_IN_EYE);
+        event->SetInt("obs_target", target->GetEntity()->entindex());
+        eventManager->FireEventClientSide(event); // Frees the event
+    }
 }
 
 bool CameraState::SetupEngineViewOverride(Vector& origin, QAngle& angles, float& fov)
@@ -178,6 +215,8 @@ void CameraState::OnTick(bool inGame)
         if (auto primaryTarget = Interfaces::GetHLTVCamera()->m_iTraget1;
             primaryTarget > 0 && primaryTarget < MAX_EDICTS)
             m_LastSpecTarget = primaryTarget;
+
+        UpdateThirdPersonOverride();
     }
     else
     {
