@@ -55,11 +55,7 @@ bool LocalPlayer::CheckDependencies()
         ready = false;
     }
 
-    try
-    {
-        HookManager::GetRawFunc<HookFunc::Global_GetLocalPlayerIndex>();
-    }
-    catch (bad_pointer)
+    if (!HookManager::GetRawFunc<HookFunc::Global_GetLocalPlayerIndex>())
     {
         PluginWarning("Required function GetLocalPlayerIndex for module %s not available!\n", GetModuleName());
         ready = false;

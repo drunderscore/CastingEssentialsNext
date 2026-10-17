@@ -701,6 +701,9 @@ void HUDHacking::UpdateClassChangeAnimations(vgui::VPANEL playerVPanel, vgui::Ed
     if (player.GetState<PlayerState>().WasClassChangedThisFrame())
     {
         auto startAnimSequence = HookManager::GetRawFunc<HookFunc::vgui_AnimationController_StartAnimationSequence>();
+        if (!startAnimSequence)
+            return;
+
         startAnimSequence(
             animController, playerPanel,
             player.GetTeam() == TFTeam::Red ? "PlayerPanel_ClassChangedRed" : "PlayerPanel_ClassChangedBlue", false);
@@ -783,7 +786,7 @@ bool HUDHacking::GetChargeBarData(Player& player, ChargeBarType& type, float& ch
     // Demoman shields and razorbacks are weird and don't go in the m_hMyWeapons array >.<
     for (int iWearable = 0; iWearable < 4; iWearable++)
     {
-        C_BaseEntity* item = HookManager::GetRawFunc<HookFunc::C_TFPlayer_GetEntityForLoadoutSlot>()(
+        C_BaseEntity* item = HookManager::GetSafeRawFunc<HookFunc::C_TFPlayer_GetEntityForLoadoutSlot>()(
             (C_TFPlayer*)player.GetEntity(), iWearable, true);
         if (!item)
             continue;

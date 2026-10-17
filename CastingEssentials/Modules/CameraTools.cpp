@@ -169,21 +169,13 @@ bool CameraTools::CheckDependencies()
         ready = false;
     }
 
-    try
-    {
-        GetHooks()->GetRawFunc<HookFunc::C_HLTVCamera_SetMode>();
-    }
-    catch (bad_pointer)
+    if (!GetHooks()->GetRawFunc<HookFunc::C_HLTVCamera_SetMode>())
     {
         PluginWarning("Required function C_HLTVCamera::SetMode for module %s not available!\n", GetModuleName());
         ready = false;
     }
 
-    try
-    {
-        GetHooks()->GetRawFunc<HookFunc::C_HLTVCamera_SetPrimaryTarget>();
-    }
-    catch (bad_pointer)
+    if (!GetHooks()->GetRawFunc<HookFunc::C_HLTVCamera_SetPrimaryTarget>())
     {
         PluginWarning("Required function C_HLTVCamera::SetPrimaryTarget for module %s not available!\n",
                       GetModuleName());

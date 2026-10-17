@@ -49,6 +49,23 @@ protected:
         if (!m_DetourFunction)
             m_DetourFunction = (DetourFnType)DefaultDetourFn();
 
+        if (!m_OriginalFunction)
+        {
+            // Usually a signature that stopped matching after a game update. Leave the function unhooked (so whatever
+            // relies on it does nothing) instead of detouring a null address.
+            static bool s_Warned = false;
+            if (!s_Warned)
+            {
+                constexpr auto name = EnumValueName<hookID>();
+                PluginWarning("Unable to hook %.*s: its address could not be found. Features relying on it will not "
+                              "work.\n",
+                              (int)name.size(), name.data());
+                s_Warned = true;
+            }
+
+            return;
+        }
+
         Assert(m_OriginalFunction);
         Assert(m_DetourFunction);
 

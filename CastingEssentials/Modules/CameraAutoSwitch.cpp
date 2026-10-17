@@ -64,11 +64,7 @@ bool CameraAutoSwitch::CheckDependencies()
         ready = false;
     }
 
-    try
-    {
-        HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetPrimaryTarget>();
-    }
-    catch (bad_pointer)
+    if (!HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetPrimaryTarget>())
     {
         PluginWarning("Required function C_HLTVCamera::SetPrimaryTarget for module %s not available!\n",
                       GetModuleName());

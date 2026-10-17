@@ -13,82 +13,74 @@ ClientTools::ClientTools()
 {
 }
 
-HWND GetMainWindow()
+// The game's window is the largest visible top-level window this process owns. Asking Windows directly means no
+// dependency on the game's internals, so no game update can break it.
+static HWND GetMainWindow()
 {
-    class IGame
+    static HWND s_Window = nullptr;
+    if (s_Window && IsWindow(s_Window))
+        return s_Window;
+
+    struct Search
     {
-    public:
-        virtual ~IGame(void) {}
-        virtual bool Init(void* pvInstance) = 0;
-        virtual bool Shutdown(void) = 0;
-        virtual bool CreateGameWindow(void) = 0;
-        virtual void DestroyGameWindow(void) = 0;
-        virtual void SetGameWindow(void* hWnd) = 0;
-        virtual bool InputAttachToGameWindow() = 0;
-        virtual void InputDetachFromGameWindow() = 0;
-        virtual void PlayStartupVideos(void) = 0;
-        virtual void* GetMainWindow(void) = 0;
-        virtual void** GetMainWindowAddress(void) = 0;
-        virtual void GetDesktopInfo(int& width, int& height, int& refreshrate) = 0;
-        virtual void SetWindowXY(int x, int y) = 0;
-        virtual void SetWindowSize(int w, int h) = 0;
-        virtual void GetWindowRect(int* x, int* y, int* w, int* h) = 0;
-        virtual bool IsActiveApp(void) = 0;
-        virtual void DispatchAllStoredGameMessages() = 0;
-    };
+        HWND m_Best = nullptr;
+        LONG m_BestArea = 0;
+    } search;
 
-    static IGame* g_pGame = nullptr;
-    if (!g_pGame)
-    {
-        constexpr auto SIG = "\x55\x8B\xEC\x83\xEC\x14\x8B\x0D\x00\x00\x00\x00\xC7\x45\xEC\x14\x00\x00\x00\x8B\x01\xFF"
-                             "\x50\x24\x89\x45\xF0\x8D\x45\xEC\x50\xC7\x45\xF4\x03\x00\x00\x00\xC7\x45\xF8\x05\x00\x00"
-                             "\x00\xC7\x45\xFC\x00\x00\x00\x00\xFF\x15\x00\x00\x00\x00\x8B\xE5\x5D\xC3";
-        constexpr auto MASK = "xxxxxxxx????xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx????xxxx";
-        constexpr auto OFFSET = 8;
+    EnumWindows(
+        [](HWND window, LPARAM param) -> BOOL {
+            DWORD processID;
+            GetWindowThreadProcessId(window, &processID);
+            if (processID != GetCurrentProcessId() || !IsWindowVisible(window) || GetWindow(window, GW_OWNER))
+                return TRUE;
 
-        auto target = (IGame***)((char*)SignatureScan("engine", SIG, MASK) + OFFSET);
-        if (target == (IGame***)OFFSET)
-            throw bad_pointer("CGame");
+            RECT rect;
+            if (!GetWindowRect(window, &rect))
+                return TRUE;
 
-        g_pGame = **target;
-    }
-    return (HWND)g_pGame->GetMainWindow();
+            auto& search = *reinterpret_cast<Search*>(param);
+            const auto area = (rect.right - rect.left) * (rect.bottom - rect.top);
+            if (area > search.m_BestArea)
+            {
+                search.m_Best = window;
+                search.m_BestArea = area;
+            }
+
+            return TRUE;
+        },
+        reinterpret_cast<LPARAM>(&search));
+
+    s_Window = search.m_Best;
+    return s_Window;
 }
 
-bool ClientTools::CheckDependencies()
-{
-    bool ready = true;
-
-    try
-    {
-        GetMainWindow();
-    }
-    catch (const bad_pointer& ptrException)
-    {
-        PluginWarning("Required interface %s for module %s not available!\n", ptrException.what(), GetModuleName());
-        ready = false;
-    }
-
-    return ready;
-}
+bool ClientTools::CheckDependencies() { return true; }
 
 void ClientTools::UpdateWindowTitle(const char* oldval)
 {
+    const auto window = GetMainWindow();
+    if (!window)
+    {
+        PluginWarning("%s: Unable to find the game window.\n", ce_clienttools_windowtitle.GetName());
+        return;
+    }
+
     auto newval = ce_clienttools_windowtitle.GetString();
     if (!newval[0])
     {
         if (oldval[0])
-            SetWindowText(GetMainWindow(), m_OriginalTitle.c_str());
+            SetWindowText(window, m_OriginalTitle.c_str());
     }
     else
     {
         if (m_OriginalTitle.empty())
         {
-            const auto length = GetWindowTextLength(GetMainWindow()) + 1;
+            const auto length = GetWindowTextLength(window) + 1;
             m_OriginalTitle.resize(length);
-            GetWindowText(GetMainWindow(), m_OriginalTitle.data(), length);
+            GetWindowText(window, m_OriginalTitle.data(), length);
+            m_OriginalTitle.resize(strlen(m_OriginalTitle.c_str()));
         }
 
-        SetWindowText(GetMainWindow(), newval);
+        SetWindowText(window, newval);
     }
 }

@@ -50,3 +50,4 @@ plugin_folder/sound/sound.cache
 *.ilk
 *.vcxproj.user
 intermediate/
+build_and_install.bat

@@ -93,11 +93,7 @@ bool CameraSmooths::CheckDependencies()
         ready = false;
     }
 
-    try
-    {
-        HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetMode>();
-    }
-    catch (bad_pointer)
+    if (!HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetMode>())
     {
         PluginWarning("Required function C_HLTVCamera::SetMode for module %s not available!\n", GetModuleName());
         ready = false;

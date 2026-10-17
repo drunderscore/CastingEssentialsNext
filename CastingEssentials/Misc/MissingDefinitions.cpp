@@ -83,9 +83,13 @@ bool PassServerEntityFilter(const IHandleEntity* pTouch, const IHandleEntity* pP
     return true;
 }
 
+// Same as the game's implementation, built on functions we can still find
 const char* GetSequenceName(CStudioHdr* studiohdr, int sequence)
 {
-    return HookManager::GetRawFunc<HookFunc::Global_GetSequenceName>()(studiohdr, sequence);
+    if (!studiohdr || sequence < 0 || sequence >= studiohdr->GetNumSeq())
+        return "Unknown";
+
+    return studiohdr->pSeqdesc(sequence).pszLabel();
 }
 
 CTraceFilterSimple::CTraceFilterSimple(const IHandleEntity* passentity, int collisionGroup,
@@ -281,11 +285,16 @@ void NormalizeAngles(QAngle& angles)
 
 void C_BaseAnimating::GetBonePosition(int iBone, Vector& origin, QAngle& angles)
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetBonePosition>()(this, iBone, origin, angles);
+    if (auto fn = HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetBonePosition>())
+        return fn(this, iBone, origin, angles);
+
+    origin = GetAbsOrigin();
+    angles = GetAbsAngles();
 }
 void C_BaseEntity::CalcAbsolutePosition()
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseEntity_CalcAbsolutePosition>()(this);
+    if (auto fn = HookManager::GetRawFunc<HookFunc::C_BaseEntity_CalcAbsolutePosition>())
+        fn(this);
 }
 void C_BaseEntity::AddToLeafSystem() { AddToLeafSystem(GetRenderGroup()); }
 void C_BaseEntity::AddToLeafSystem(RenderGroup_t group)
@@ -305,30 +314,42 @@ void C_BaseEntity::AddToLeafSystem(RenderGroup_t group)
 }
 int C_BaseAnimating::LookupBone(const char* szName)
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_LookupBone>()(this, szName);
+    auto fn = HookManager::GetRawFunc<HookFunc::C_BaseAnimating_LookupBone>();
+    return fn ? fn(this, szName) : -1;
 }
 CBoneCache* C_BaseAnimating::GetBoneCache(CStudioHdr* hdr)
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetBoneCache>()(this, hdr);
+    return HookManager::GetSafeRawFunc<HookFunc::C_BaseAnimating_GetBoneCache>()(this, hdr);
 }
 void C_BaseAnimating::LockStudioHdr()
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_LockStudioHdr>()(this);
+    return HookManager::GetSafeRawFunc<HookFunc::C_BaseAnimating_LockStudioHdr>()(this);
 }
 bool C_BaseAnimating::ComputeHitboxSurroundingBox(Vector* pVecWorldMins, Vector* pVecWorldMaxs)
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_ComputeHitboxSurroundingBox>()(this, pVecWorldMins,
-                                                                                            pVecWorldMaxs);
+    auto fn = HookManager::GetRawFunc<HookFunc::C_BaseAnimating_ComputeHitboxSurroundingBox>();
+    return fn && fn(this, pVecWorldMins, pVecWorldMaxs);
 }
+// Same as the game's implementation, built on functions we can still find
 const char* C_BaseAnimating::GetSequenceActivityName(int iSequence)
 {
-    return HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetSequenceActivityName>()(this, iSequence);
+    if (iSequence == -1)
+        return "Not Found!";
+
+    auto studiohdr = GetModelPtr();
+    if (!studiohdr)
+        return "No model!";
+
+    if (iSequence < 0 || iSequence >= studiohdr->GetNumSeq())
+        return "Unknown";
+
+    return studiohdr->pSeqdesc(iSequence).pszActivityName();
 }
 
 Activity C_BaseAnimating::GetSequenceActivity(int iSequence)
 {
-    return static_cast<Activity>(
-        HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetSequenceActivity>()(this, iSequence));
+    auto fn = HookManager::GetRawFunc<HookFunc::C_BaseAnimating_GetSequenceActivity>();
+    return fn ? static_cast<Activity>(fn(this, iSequence)) : ACT_INVALID;
 }
 
 CBasePlayer* UTIL_PlayerByIndex(int entindex) { return ToBasePlayer(ClientEntityList().GetEnt(entindex)); }
@@ -359,9 +380,12 @@ C_BaseEntity* C_HLTVCamera::GetPrimaryTarget()
 }
 void C_HLTVCamera::SetPrimaryTarget(int entIndex)
 {
-    return HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetPrimaryTarget>()(this, entIndex);
+    return HookManager::GetSafeRawFunc<HookFunc::C_HLTVCamera_SetPrimaryTarget>()(this, entIndex);
 }
-void C_HLTVCamera::SetMode(int mode) { return HookManager::GetRawFunc<HookFunc::C_HLTVCamera_SetMode>()(this, mode); }
+void C_HLTVCamera::SetMode(int mode)
+{
+    return HookManager::GetSafeRawFunc<HookFunc::C_HLTVCamera_SetMode>()(this, mode);
+}
 void C_HLTVCamera::SetCameraAngle(QAngle& ang)
 {
     // This has been inlined by the compiler -- reimplement it ourself.
@@ -454,26 +478,46 @@ CAutoGameSystemPerFrame::CAutoGameSystemPerFrame(char const* name) : m_pszName(n
     }
 }
 
-void IGameSystem::Add(IGameSystem* pSys) { HookManager::GetRawFunc<HookFunc::IGameSystem_Add>()(pSys); }
-IGameSystem::~IGameSystem() { Interfaces::GetGameSystems()->FindAndRemove(this); }
-IGameSystemPerFrame::~IGameSystemPerFrame() { Interfaces::GetGameSystemsPerFrame()->FindAndRemove(this); }
+void IGameSystem::Add(IGameSystem* pSys)
+{
+    if (auto fn = HookManager::GetRawFunc<HookFunc::IGameSystem_Add>())
+        fn(pSys);
+}
+IGameSystem::~IGameSystem()
+{
+    if (auto systems = Interfaces::GetGameSystems())
+        systems->FindAndRemove(this);
+}
+IGameSystemPerFrame::~IGameSystemPerFrame()
+{
+    if (auto systems = Interfaces::GetGameSystemsPerFrame())
+        systems->FindAndRemove(this);
+}
 
 void CParticleProperty::DebugPrintEffects()
 {
-    return HookManager::GetRawFunc<HookFunc::CParticleProperty_DebugPrintEffects>()(this);
+    if (auto fn = HookManager::GetRawFunc<HookFunc::CParticleProperty_DebugPrintEffects>())
+        fn(this);
 }
 
 void CNewParticleEffect::StopEmission(bool bInfiniteOnly, bool bRemoveAllParticles, bool bWakeOnStop)
 {
-    return HookManager::GetRawFunc<HookFunc::CNewParticleEffect_StopEmission>()(this, bInfiniteOnly,
-                                                                                bRemoveAllParticles, bWakeOnStop);
+    if (auto fn = HookManager::GetRawFunc<HookFunc::CNewParticleEffect_StopEmission>())
+        fn(this, bInfiniteOnly, bRemoveAllParticles, bWakeOnStop);
 }
 void CNewParticleEffect::SetDormant(bool dormant)
 {
-    return HookManager::GetRawFunc<HookFunc::CNewParticleEffect_SetDormant>()(this, dormant);
+    if (auto fn = HookManager::GetRawFunc<HookFunc::CNewParticleEffect_SetDormant>())
+        fn(this, dormant);
 }
 
-int CStudioHdr::GetNumSeq() const { return HookManager::GetRawFunc<HookFunc::CStudioHdr_GetNumSeq>()(this); }
+int CStudioHdr::GetNumSeq() const
+{
+    // pSeqdesc returns a reference, so it can't safely stand in for a missing function. Report no sequences instead,
+    // so nothing ever calls it.
+    auto fn = HookManager::GetRawFunc<HookFunc::CStudioHdr_GetNumSeq>();
+    return fn && HookManager::GetRawFunc<HookFunc::CStudioHdr_pSeqdesc>() ? fn(this) : 0;
+}
 mstudioseqdesc_t& CStudioHdr::pSeqdesc(int iSequence)
 {
     return HookManager::GetRawFunc<HookFunc::CStudioHdr_pSeqdesc>()(this, iSequence);

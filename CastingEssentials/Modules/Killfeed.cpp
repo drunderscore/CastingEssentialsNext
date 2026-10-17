@@ -63,9 +63,9 @@ void Killfeed::OnTick(bool inGame)
 
     // static_assert(sizeof(DeathNoticeItem) == 408, "sizeof(DeathNoticeItem) doesn't match TF2!");
 
-    auto const localPlayerIndex = GetHooks()->GetRawFunc<HookFunc::Global_GetLocalPlayerIndex>()();
+    auto const localPlayerIndex = GetHooks()->GetSafeRawFunc<HookFunc::Global_GetLocalPlayerIndex>()();
     Player* localPlayer = Player::GetPlayer(localPlayerIndex, __FUNCSIG__);
-    auto const localPlayerUserID = localPlayer->GetUserID();
+    auto const localPlayerUserID = localPlayer ? localPlayer->GetUserID() : -1;
 
     for (int i = 0; i < m_DeathNotices->Count(); i++)
     {
@@ -141,7 +141,7 @@ void Killfeed::OnTick(bool inGame)
                 }
             }
 
-            if (updated)
+            if (updated && GetIcon)
                 return GetIcon(buffer, EDeathNoticeIconFormat::kDeathNoticeIcon_Standard); // I'm lazy
             else
                 return texture;

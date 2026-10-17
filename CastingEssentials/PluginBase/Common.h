@@ -67,6 +67,19 @@ __forceinline void PluginColorMsg(const Color& color, const char* fmt, Parameter
 bool TryParseInteger(const char* str, int& out);
 bool TryParseFloat(const char* str, float& out);
 
+// The name of an enumerator, e.g. "CStorePanel_RequestPricesheet" for HookFunc::CStorePanel_RequestPricesheet. MSVC
+// spells out enum template arguments by name in __FUNCSIG__ (or as "(enum X)0x3e" when there is no such enumerator).
+template<auto value>
+constexpr std::string_view EnumValueName()
+{
+    constexpr std::string_view sig = __FUNCSIG__;
+    constexpr std::string_view prefix = "EnumValueName<";
+    constexpr auto start = sig.find(prefix) + prefix.size();
+    constexpr auto qualified = sig.substr(start, sig.rfind(">(void)") - start);
+    constexpr auto scope = qualified.rfind("::");
+    return scope == std::string_view::npos ? qualified : qualified.substr(scope + 2);
+}
+
 inline bool IsStringEmpty(const std::string_view& s) { return s.empty(); }
 inline bool IsStringEmpty(const std::string* s)
 {

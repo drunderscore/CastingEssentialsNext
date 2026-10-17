@@ -396,6 +396,12 @@ void ConsoleTools::RemoveAlias(const CCommand& command)
     }
 
     auto aliases = Interfaces::GetCmdAliases();
+    if (!aliases)
+    {
+        Warning("%s: Unable to access the alias list (see ce_signatures_status).\n", command[0]);
+        return;
+    }
+
     if (!*aliases)
     {
         Warning("%s: No current registered aliases.\n", command[0]);
@@ -426,8 +432,12 @@ void ConsoleTools::RemoveAliasAutocomplete(const CCommand& partial, CUtlVector<C
     // Number of characters after command name + 1 whitespace
     const auto arg1Length = strlen(partial[1]);
 
+    const auto aliases = Interfaces::GetCmdAliases();
+    if (!aliases)
+        return;
+
     SuggestionList<> suggestions;
-    for (auto alias = *Interfaces::GetCmdAliases(); alias; alias = alias->next)
+    for (auto alias = *aliases; alias; alias = alias->next)
     {
         if (strnicmp(alias->name, partial[1], arg1Length))
             continue;

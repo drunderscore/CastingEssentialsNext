@@ -37,7 +37,7 @@ protected:
     void LevelShutdown() override;
 
 private:
-    static float& GetInspectInterp();
+    static float* GetInspectInterp();
 
     enum class InspectStage
     {

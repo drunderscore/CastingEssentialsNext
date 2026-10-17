@@ -249,27 +249,17 @@ void WeaponTools::UpdateVMIdleActivity(const CHandle<C_BaseViewModel>& vm, Activ
 
 std::pair<std::byte*, std::byte*> WeaponTools::GetSkinDownsampleVars()
 {
-    static const auto var1 = SignatureScan("client", "\x41\xC1\xFD\x02\x44\x3B\xE8\x44\x0F\x4C\xE8", "xxxxxxxxxxx", 3);
-    static const auto var2 = SignatureScan("client", "\x41\xC1\xFF\x02\x44\x3B\xF8\x44\x0F\x4C\xF8", "xxxxxxxxxxx", 3);
+    static const auto var1 = SignatureScan("client", "\x41\xC1\xFD\x02\x44\x3B\xE8\x44\x0F\x4C\xE8", "xxxxxxxxxxx", 3,
+                                           "Skin downsample (1)");
+    static const auto var2 = SignatureScan("client", "\x41\xC1\xFF\x02\x44\x3B\xF8\x44\x0F\x4C\xF8", "xxxxxxxxxxx", 3,
+                                           "Skin downsample (2)");
     return std::pair<std::byte*, std::byte*>(var1, var2);
 }
 
 bool WeaponTools::CheckDependencies()
 {
-    bool success = true;
-
-    try
-    {
-        GetInspectInterp();
-    }
-    catch (const bad_pointer&)
-    {
-        PluginWarning("Failed to find C_TFViewModel::CalcViewModelView()::s_inspectInterp for module %s\n",
-                      GetModuleName());
-        success = false;
-    }
-
-    return success;
+    // s_inspectInterp is only shown by ce_weapon_inspect_debug, so it isn't required
+    return true;
 }
 
 void WeaponTools::OnTick(bool inGame)
@@ -297,7 +287,7 @@ void WeaponTools::OnTick(bool inGame)
 
                 const auto inspectAnimTime = inspectAnimTimeOffset.GetValue(weapon);
                 const auto inspectStage = inspectStageOffset.GetValue(weapon);
-                auto& inspectInterp = GetInspectInterp();
+                const auto inspectInterp = GetInspectInterp();
 
                 int i = 0;
 
@@ -305,7 +295,10 @@ void WeaponTools::OnTick(bool inGame)
 
                 engine->Con_NPrintf(i++, "m_nInspectStage: %i", inspectStage);
 
-                engine->Con_NPrintf(i++, "s_inspectInterp: %1.2f", inspectInterp);
+                if (inspectInterp)
+                    engine->Con_NPrintf(i++, "s_inspectInterp: %1.2f", *inspectInterp);
+                else
+                    engine->Con_NPrintf(i++, "s_inspectInterp: (not found)");
 
                 engine->Con_NPrintf(i++, "vm[0]: %s, vm[1]: %s", vms[0] ? "valid" : "NULL", vms[1] ? "valid" : "NULL");
 
@@ -336,24 +329,33 @@ void WeaponTools::OnTick(bool inGame)
 
 void WeaponTools::LevelShutdown() { m_ViewModelCache.clear(); }
 
-float& WeaponTools::GetInspectInterp()
+float* WeaponTools::GetInspectInterp()
 {
-    static float* s_inspectInterp = nullptr;
-    if (!s_inspectInterp)
-    {
-        constexpr auto SIG = "\xF3\x0F\x58\x05????\x0F\x2F\xD0";
-        constexpr auto MASK = "xxxx????xxx";
-        constexpr auto OFFSET = 4;
-
-        if (auto target = (std::byte*)SignatureScan("client", SIG, MASK))
+    static float* s_inspectInterp = []() -> float* {
+        // C_TFViewModel::CalcViewModelView updates its static s_inspectInterp (movss [rip+disp32], xmm) just before
+        // looking up the "inspect_viewmodel_offset" attribute.
+        float* found = nullptr;
+        if (const auto str = FindModuleString("client", "inspect_viewmodel_offset"))
         {
-            target += OFFSET;
-            s_inspectInterp = *(float**)target;
+            if (const auto reference = (const uint8_t*)FindRipRelativeReference("client", str))
+            {
+                for (auto p = reference - 4; p > reference - 0x100 && !found; p--)
+                {
+                    // F3 [REX] 0F 11 modrm: movss [rip+disp32], xmm
+                    const auto op = (p[1] & 0xF0) == 0x40 ? p + 2 : p + 1;
+                    if (p[0] == 0xF3 && op[0] == 0x0F && op[1] == 0x11 && IsRipRelativeModRM(op[2]))
+                    {
+                        const auto target = (float*)ResolveRipRelative(op + 3);
+                        if (IsAddressInModule("client", target, sizeof(*target)))
+                            found = target;
+                    }
+                }
+            }
         }
 
-        if (!s_inspectInterp)
-            throw bad_pointer("C_TFViewModel::CalcViewModelView()::s_inspectInterp");
-    }
+        RecordSignatureStatus("s_inspectInterp", "client", found ? 1.0f : 0.0f);
+        return found;
+    }();
 
-    return *s_inspectInterp;
+    return s_inspectInterp;
 }

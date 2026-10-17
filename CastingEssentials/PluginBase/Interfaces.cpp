@@ -170,7 +170,7 @@ IClientMode* Interfaces::GetClientMode()
 
         typedef IClientMode* (*GetClientModeFn)();
 
-        auto fn = (GetClientModeFn)((char*)SignatureScan("client", SIG, MASK) + OFFSET);
+        auto fn = (GetClientModeFn)SignatureScan("client", SIG, MASK, OFFSET, "GetClientModeNormal");
 
         if (!fn)
             throw bad_pointer("IClientMode");
@@ -195,15 +195,12 @@ HLTVCameraOverride* Interfaces::GetHLTVCamera()
         constexpr const char* MASK = "xxxx?x??????xxxxxx??????x??????xxxxxxxxxxxx?x????xxx";
         constexpr uintptr_t OFFSET = 44;
 
-        auto address_of_call = reinterpret_cast<uintptr_t>(SignatureScan("client", SIG, MASK)) + OFFSET;
-        if (address_of_call == OFFSET)
+        auto address_of_call = (uint8_t*)SignatureScan("client", SIG, MASK, OFFSET, "HLTVCamera()");
+        if (!address_of_call || address_of_call[0] != 0xE8) // call rel32
             throw bad_pointer("HLTVCamera()");
 
-        auto relative_address_in_call = *reinterpret_cast<int32_t*>(address_of_call + 1);
-
         typedef C_HLTVCamera* (*C_HLTVCameraSingletonGetterFn)();
-        auto hltv_camera_getter =
-            reinterpret_cast<C_HLTVCameraSingletonGetterFn>(address_of_call + 5 + relative_address_in_call);
+        auto hltv_camera_getter = reinterpret_cast<C_HLTVCameraSingletonGetterFn>(ResolveRipRelative(address_of_call + 1));
         s_HLTVCamera = hltv_camera_getter();
     }
 
@@ -215,15 +212,36 @@ HLTVCameraOverride* Interfaces::GetHLTVCamera()
 
 cmdalias_t** Interfaces::GetCmdAliases()
 {
-    static cmdalias_t** s_CmdAliases = nullptr;
-    if (!s_CmdAliases)
-    {
-        auto cmdShutdownFn = HookManager::GetRawFunc<HookFunc::Global_Cmd_Shutdown>();
+    static cmdalias_t** s_CmdAliases = []() -> cmdalias_t** {
+        // With no arguments, the engine's "alias" command prints this, then walks the alias list:
+        //     lea rcx, "Current alias commands:\n"; call Msg; mov rbx, cmd_alias
+        cmdalias_t** aliases = nullptr;
+        if (const auto str = FindModuleString("engine", "Current alias commands:\n"))
+        {
+            if (const auto reference = (const uint8_t*)FindRipRelativeReference("engine", str))
+            {
+                for (auto p = reference + sizeof(int32_t); p < reference + 32; p++)
+                {
+                    // mov r64, [rip+disp32]
+                    if ((p[0] & 0xFB) == 0x48 && p[1] == 0x8B && IsRipRelativeModRM(p[2]))
+                    {
+                        const auto found = (cmdalias_t**)ResolveRipRelative(p + 3);
+                        if (IsAddressInModule("engine", found, sizeof(*found)))
+                            aliases = found;
 
-        auto location = *(intptr_t*)((std::byte*)cmdShutdownFn + 1);
+                        break;
+                    }
+                }
+            }
+        }
 
-        s_CmdAliases = (cmdalias_t**)location;
-    }
+        RecordSignatureStatus("cmd_alias", "engine", aliases ? 1.0f : 0.0f);
+        if (!aliases)
+            PluginWarning("Unable to find cmd_alias in engine.dll, likely due to a game update. Alias management "
+                          "commands will not work.\n");
+
+        return aliases;
+    }();
 
     return s_CmdAliases;
 }
@@ -238,56 +256,84 @@ C_GameRules* Interfaces::GetGameRules()
         constexpr const char* MASK = "xxxxxxxxxxx????xxxxxxxxxx";
         constexpr uintptr_t OFFSET = 8;
 
-        if (auto gr = reinterpret_cast<uintptr_t>(SignatureScan("client", SIG, MASK)))
-        {
-            gr += OFFSET;
-            auto relativeOffset = *reinterpret_cast<int32_t*>(gr + 3);
-
-            s_GameRules = *reinterpret_cast<C_GameRules**>(gr + relativeOffset + 7);
-        }
-        else
-        {
+        // mov rbx, [rip+disp32] (g_pGameRules)
+        const auto gr = (uint8_t*)SignatureScan("client", SIG, MASK, OFFSET, "g_pGameRules");
+        if (!gr || gr[0] != 0x48 || gr[1] != 0x8B || !IsRipRelativeModRM(gr[2]))
             throw bad_pointer("C_GameRules");
-        }
+
+        s_GameRules = *reinterpret_cast<C_GameRules**>(ResolveRipRelative(gr + 3));
     }
 
     return s_GameRules;
 }
 
-CUtlVector<IGameSystem*>* Interfaces::GetGameSystems()
+// IGameSystem::Add appends to s_GameSystems, then (for per-frame systems) to s_GameSystemsPerFrame. Each append starts by
+// loading that vector's m_Size (mov r32, [rip+disp32]), so the first such load is in s_GameSystems, and the first one
+// outside it is in s_GameSystemsPerFrame.
+static std::pair<std::byte*, std::byte*> FindGameSystemLists()
 {
-    static CUtlVector<IGameSystem*>* s_GameSystems = nullptr;
-    if (!s_GameSystems)
-    {
-        constexpr const char* SIG = "\xB9????\x89\x75\xFC\xE8????\x6A\x00";
-        constexpr const char* MASK = "x????xxxx????xx";
-        constexpr auto OFFSET = 1;
+    // CUtlVector<T*> is { CUtlMemory { T** m_pMemory; int m_nAllocationCount; int m_nGrowSize; } int m_Size; T**
+    // m_pElements; }
+    constexpr size_t VECTOR_SIZE = sizeof(CUtlVector<IGameSystem*>);
+    constexpr size_t SIZE_OFFSET = sizeof(CUtlMemory<IGameSystem*>);
+    static_assert(VECTOR_SIZE == 0x20 && SIZE_OFFSET == 0x10);
 
-        if (auto p = (std::byte*)SignatureScan("client", SIG, MASK))
-            s_GameSystems = *(CUtlVector<IGameSystem*>**)(p + OFFSET);
-        else
-            throw bad_pointer("CUtlVector<IGameSystem*>");
+    const auto looksLikeVector = [](const std::byte* vec) {
+        if (!IsAddressInModule("client", vec, VECTOR_SIZE))
+            return false;
+
+        const auto memory = *(void* const*)vec;
+        const auto allocated = *(const int*)(vec + 8);
+        const auto size = *(const int*)(vec + SIZE_OFFSET);
+        const auto elements = *(void* const*)(vec + 0x18);
+        return size >= 0 && size <= allocated && elements == memory;
+    };
+
+    std::byte* lists[2] = {};
+    if (const auto add = (const uint8_t*)HookManager::GetRawFunc<HookFunc::IGameSystem_Add>())
+    {
+        size_t found = 0;
+        for (auto p = add; p < add + 0x200 && found < 2; p++)
+        {
+            const auto op = (p[0] & 0xF8) == 0x40 ? p + 1 : p; // Optional REX prefix (not REX.W)
+            if (op[0] != 0x8B || !IsRipRelativeModRM(op[1]))
+                continue;
+
+            const auto vec = ResolveRipRelative(op + 2) - SIZE_OFFSET;
+            if (found == 1 && vec >= lists[0] - SIZE_OFFSET && vec < lists[0] + VECTOR_SIZE)
+                continue; // Another member of the first vector
+
+            if (!looksLikeVector(vec))
+                break;
+
+            lists[found++] = vec;
+        }
+
+        if (found < 2)
+            lists[0] = lists[1] = nullptr;
     }
 
-    return s_GameSystems;
+    RecordSignatureStatus("s_GameSystems", "client", lists[0] ? 1.0f : 0.0f);
+    if (!lists[0])
+        PluginWarning("Unable to find the game system lists in client.dll, likely due to a game update.\n");
+
+    return {lists[0], lists[1]};
+}
+
+static const std::pair<std::byte*, std::byte*>& GetGameSystemLists()
+{
+    static const auto s_Lists = FindGameSystemLists();
+    return s_Lists;
+}
+
+CUtlVector<IGameSystem*>* Interfaces::GetGameSystems()
+{
+    return (CUtlVector<IGameSystem*>*)GetGameSystemLists().first;
 }
 
 CUtlVector<IGameSystemPerFrame*>* Interfaces::GetGameSystemsPerFrame()
 {
-    static CUtlVector<IGameSystemPerFrame*>* s_GameSystems = nullptr;
-    if (!s_GameSystems)
-    {
-        constexpr const char* SIG = "\xB9????\xE8????\x8D\x45\xFC\xC7\x06";
-        constexpr const char* MASK = "x????x????xxxxx";
-        constexpr auto OFFSET = 1;
-
-        if (auto p = (std::byte*)SignatureScan("client", SIG, MASK))
-            s_GameSystems = *(CUtlVector<IGameSystemPerFrame*>**)(p + OFFSET);
-        else
-            throw bad_pointer("CUtlVector<IGameSystemPerFrame*>");
-    }
-
-    return s_GameSystems;
+    return (CUtlVector<IGameSystemPerFrame*>*)GetGameSystemLists().second;
 }
 
 ITextureManager* Interfaces::GetTextureManager()

@@ -183,7 +183,10 @@ void ProjectileOutlines::CreateGlowForEntity(IClientEntity* projectileEntity)
     C_BaseEntity* ent;
     {
         IClientNetworkable* networkable =
-            GetHooks()->GetRawFunc<HookFunc::Global_CreateTFGlowObject>()(MAGIC_ENTNUM, MAGIC_SERIALNUM);
+            GetHooks()->GetSafeRawFunc<HookFunc::Global_CreateTFGlowObject>()(MAGIC_ENTNUM, MAGIC_SERIALNUM);
+        if (!networkable)
+            return;
+
         ent = networkable->GetIClientUnknown()->GetBaseEntity();
     }
 
