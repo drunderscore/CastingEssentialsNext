@@ -4,5 +4,5 @@
 	branch = master
 [submodule "sdk2013"]
 	path = sdk2013
-	url = https://github.com/mitchcl/source-sdk-2013.git
+	url = https://github.com/drunderscore/source-sdk-2013
 	branch = next
